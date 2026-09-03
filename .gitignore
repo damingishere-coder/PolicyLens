@@ -1,0 +1,60 @@
+# PolicyLens — public source code only
+
+# Local family records and imported evidence (never commit)
+/private/
+/data/
+/vault/
+/uploads/
+/backups/
+/exports/
+/reports/private/
+/*总档案*.md
+*.private.*
+*.policy.pdf
+*.illustration.pdf
+
+# Local databases and encryption material
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.key
+*.pem
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.token
+*.secret
+
+# Local design drafts and generated working files
+/work/
+/scratch/
+/outputs/
+
+# JavaScript / Electron
+node_modules/
+dist/
+release/
+out/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Editors and operating system
+.idea/
+.vscode/
+*.log
+Thumbs.db
+.DS_Store

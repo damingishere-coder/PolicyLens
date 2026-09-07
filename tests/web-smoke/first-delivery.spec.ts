@@ -70,7 +70,7 @@ async function waitForPortToClose(port: number): Promise<void> {
 }
 
 async function acceptCurrentImport(page: Page): Promise<void> {
-  await expect(page.getByRole("heading", { name: "候选字段" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "候选字段" })).toBeVisible();
   await page.getByRole("button", { name: "全部接受" }).click();
   await page.getByRole("button", { name: "确认并发布版本" }).click();
   await expect(page.getByText("产品版本已保存")).toBeVisible();

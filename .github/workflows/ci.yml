@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Windows full verification
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install JavaScript dependencies
+        shell: pwsh
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+
+      - name: Install Python dependencies
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip
+          .\.venv\Scripts\python.exe -m pip install -e ".\services\research-api[dev]"
+
+      - name: Lint
+        run: corepack pnpm lint
+
+      - name: Typecheck
+        run: corepack pnpm typecheck
+
+      - name: Unit and API tests
+        run: corepack pnpm test
+
+      - name: OpenAPI contract
+        run: corepack pnpm test:contract
+
+      - name: Chrome browser smoke test
+        run: corepack pnpm test:web-smoke
+
+      - name: Privacy scan
+        run: corepack pnpm privacy:scan

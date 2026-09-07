@@ -28,12 +28,17 @@ describe("OpenAPI contract", () => {
     const raw = await readFile("packages/contracts/openapi.json", "utf8");
     const openapi = JSON.parse(raw) as OpenApiDocument;
     expect(openapi.components.schemas.ManualMaterialRequest.additionalProperties).toBe(false);
+    expect(openapi.components.schemas.CandidateComparisonRequest.additionalProperties).toBe(false);
     for (const route of [
       "/api/v1/imports/pdf",
       "/api/v1/imports/{import_id}/review",
       "/api/v1/comparisons/basic",
       "/api/v1/comparisons/evidence",
       "/api/v1/research/preview",
+      "/api/v1/research/readiness",
+      "/api/v1/research/candidates",
+      "/api/v1/research/candidates/{import_id}",
+      "/api/v1/research/candidate-comparisons",
       "/api/v1/research/runs",
       "/api/v1/research/runs/{run_id}",
       "/api/v1/research/runs/{run_id}/cancel",

@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+from test_public_research import SyntheticFetcher, create_run, discovery_output
 
 from policylens_api.app import create_app
 from policylens_api.crypto import AesTestProtector
@@ -165,3 +166,85 @@ def test_confirmed_research_run_is_persisted_and_executes_off_request_thread(
             time.sleep(0.01)
         assert current["status"] == "FAILED"
         assert current["error_code"] == "NO_VERIFIED_OFFICIAL_SOURCE"
+
+
+def test_candidate_workbench_routes_are_authenticated_strict_and_official_only(
+    tmp_path: Path,
+) -> None:
+    token = "synthetic-candidate-token"
+    app = create_app(
+        tmp_path / "candidate-api-data",
+        token,
+        protector=AesTestProtector(b"W" * 32),
+        testing=True,
+    )
+    research = app.state.public_research
+    first = discovery_output()
+    second = discovery_output(
+        insurer_id="prudential-hk",
+        display_name="Official Synthetic Retirement Plan",
+        source_url="https://www.prudential.com.hk/synthetic/retirement-plan",
+    )
+    output = ResearchDiscoveryOutput(
+        schema_version="1.0",
+        products=[*first.products, *second.products],
+        leads=first.leads,
+    )
+    run_id = create_run(research)
+    research.apply_discovery(
+        run_id,
+        output,
+        SyntheticFetcher(first, second),
+        cli_version="codex-cli synthetic",
+        argument_profile="LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V1",
+    )
+    headers = {"X-PolicyLens-Token": token}
+
+    with TestClient(app) as client:
+        assert client.get("/api/v1/research/readiness").status_code == 401
+        readiness = client.get("/api/v1/research/readiness", headers=headers)
+        assert readiness.status_code == 200
+        assert readiness.json()["manual_confirmation_required"] is True
+        assert {item["id"] for item in readiness.json()["checks"]} == {
+            "research_database",
+            "encrypted_vault",
+            "codex_cli",
+            "research_slot",
+        }
+
+        response = client.get(
+            f"/api/v1/research/candidates?run_id={run_id}&status=WAITING_REVIEW",
+            headers=headers,
+        )
+        assert response.status_code == 200
+        candidates = response.json()
+        assert len(candidates) == 2
+        assert all(item["source"]["authority"].startswith("INSURER_OFFICIAL") for item in candidates)
+        detail = client.get(
+            f"/api/v1/research/candidates/{candidates[0]['import_id']}", headers=headers
+        )
+        assert detail.status_code == 200
+        assert detail.json()["verification_label"] == "UNVERIFIED_CANDIDATE"
+
+        compared = client.post(
+            "/api/v1/research/candidate-comparisons",
+            headers=headers,
+            json={"import_ids": [item["import_id"] for item in candidates]},
+        )
+        assert compared.status_code == 200
+        assert len(compared.json()["candidates"]) == 2
+        duplicate = client.post(
+            "/api/v1/research/candidate-comparisons",
+            headers=headers,
+            json={"import_ids": [candidates[0]["import_id"], candidates[0]["import_id"]]},
+        )
+        assert duplicate.status_code == 422
+        extra = client.post(
+            "/api/v1/research/candidate-comparisons",
+            headers=headers,
+            json={
+                "import_ids": [item["import_id"] for item in candidates],
+                "include_third_party": True,
+            },
+        )
+        assert extra.status_code == 422

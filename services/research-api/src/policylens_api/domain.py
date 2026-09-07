@@ -392,3 +392,14 @@ class EvidenceComparisonRequest(StrictModel):
         if len(value) != len(set(value)):
             raise ValueError("product versions must be unique")
         return value
+
+
+class CandidateComparisonRequest(StrictModel):
+    import_ids: list[str] = Field(min_length=2, max_length=4)
+
+    @field_validator("import_ids")
+    @classmethod
+    def unique_imports(cls, value: list[str]) -> list[str]:
+        if len(value) != len(set(value)):
+            raise ValueError("candidate imports must be unique")
+        return value

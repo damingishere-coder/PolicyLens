@@ -105,7 +105,10 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
         ...process.env,
         POLICYLENS_TEST_MODE: "1",
         POLICYLENS_FAKE_CODEX_COMMAND: process.execPath,
-        POLICYLENS_FAKE_CODEX_SCRIPT: path.join(projectRoot, "tests", "fixtures", "synthetic", "fake-codex.mjs")
+        POLICYLENS_FAKE_CODEX_SCRIPT: path.join(projectRoot, "tests", "fixtures", "synthetic", "fake-codex.mjs"),
+        POLICYLENS_FAKE_RESEARCH_CODEX_COMMAND: process.execPath,
+        POLICYLENS_FAKE_RESEARCH_CODEX_SCRIPT: path.join(projectRoot, "tests", "fixtures", "synthetic", "fake-research-codex.mjs"),
+        POLICYLENS_FAKE_RESEARCH_SOURCE: "1"
       }
     }
   );
@@ -136,6 +139,22 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await expect(page.getByText("不会发送", { exact: true })).toBeVisible();
     await expect(page.getByText("Codex", { exact: false }).first()).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("policylens-research-preview.png"), fullPage: true });
+
+    await page.getByLabel("我已查看范围和用量提示，同意本次只搜索公开资料").check();
+    await page.getByRole("button", { name: "确认并启动一次研究" }).click();
+    await expect(page.getByRole("heading", { name: "SYNTHETIC Future Savings Plan" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "SYNTHETIC Retirement Plan" })).toBeVisible();
+    await expect(page.getByText("NO_OFFICIAL_CANDIDATE", { exact: true })).toBeVisible();
+    await page.getByLabel("加入待核验对比").nth(0).check();
+    await page.getByLabel("加入待核验对比").nth(1).check();
+    await page.getByRole("button", { name: /对比所选 2/ }).click();
+    await expect(page.getByRole("heading", { name: "待核验候选对比" })).toBeVisible();
+    await expect(page.getByText("不是正式结论", { exact: true })).toBeVisible();
+    await page.locator(".candidate-card").first().getByRole("button", { name: "逐项人工核验" }).click();
+    await acceptCurrentImport(page);
+    await page.getByRole("button", { name: "香港储蓄/年金" }).click();
+    await expect(page.getByRole("button", { name: "查看正式产品" }).first()).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("policylens-candidate-workbench.png"), fullPage: true });
 
     await page.getByRole("button", { name: "规划中" }).click();
     await page.getByRole("button", { name: "打开工具" }).click();

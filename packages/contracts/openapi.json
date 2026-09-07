@@ -74,6 +74,25 @@
         "title": "Body_upload_restore_preview_api_v1_restores_upload_preview_post",
         "type": "object"
       },
+      "CandidateComparisonRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "import_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4,
+            "minItems": 2,
+            "title": "Import Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "import_ids"
+        ],
+        "title": "CandidateComparisonRequest",
+        "type": "object"
+      },
       "CandidateDecision": {
         "additionalProperties": false,
         "properties": {
@@ -1765,6 +1784,165 @@
         ]
       }
     },
+    "/api/v1/research/candidate-comparisons": {
+      "post": {
+        "operationId": "compare_research_candidates_api_v1_research_candidate_comparisons_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Compare Research Candidates Api V1 Research Candidate Comparisons Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare Research Candidates",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/candidates": {
+      "get": {
+        "operationId": "list_research_candidates_api_v1_research_candidates_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "run_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Research Candidates Api V1 Research Candidates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Research Candidates",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/candidates/{import_id}": {
+      "get": {
+        "operationId": "get_research_candidate_api_v1_research_candidates__import_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "required": true,
+            "schema": {
+              "title": "Import Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Research Candidate Api V1 Research Candidates  Import Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Research Candidate",
+        "tags": [
+          "research"
+        ]
+      }
+    },
     "/api/v1/research/dashboard": {
       "get": {
         "operationId": "research_dashboard_api_v1_research_dashboard_get",
@@ -1854,6 +2032,29 @@
           }
         },
         "summary": "List Research Products",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/readiness": {
+      "get": {
+        "operationId": "research_readiness_api_v1_research_readiness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Research Readiness Api V1 Research Readiness Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Research Readiness",
         "tags": [
           "research"
         ]

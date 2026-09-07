@@ -21,6 +21,10 @@ export interface PolicyLensApi {
   compare(versionIds: string[]): Promise<unknown>;
   compareEvidence(versionIds: string[]): Promise<unknown>;
   getResearchDashboard(): Promise<unknown>;
+  getResearchReadiness(): Promise<unknown>;
+  listResearchCandidates(runId?: string, status?: string): Promise<unknown>;
+  getResearchCandidate(importId: string): Promise<unknown>;
+  compareResearchCandidates(importIds: string[]): Promise<unknown>;
   previewResearch(): Promise<unknown>;
   startResearch(previewHash: string): Promise<unknown>;
   listResearchRuns(): Promise<unknown>;
@@ -167,6 +171,19 @@ export const policyLens: PolicyLensApi = {
   compare: (versionIds) => request("/api/v1/comparisons/basic", jsonBody({ product_version_ids: versionIds })),
   compareEvidence: (versionIds) => request("/api/v1/comparisons/evidence", jsonBody({ product_version_ids: versionIds })),
   getResearchDashboard: () => request("/api/v1/research/dashboard"),
+  getResearchReadiness: () => request("/api/v1/research/readiness"),
+  listResearchCandidates: (runId, status) => {
+    const query = new URLSearchParams();
+    if (runId) query.set("run_id", runId);
+    if (status) query.set("status", status);
+    const suffix = query.size ? `?${query.toString()}` : "";
+    return request(`/api/v1/research/candidates${suffix}`);
+  },
+  getResearchCandidate: (importId) => request(`/api/v1/research/candidates/${encodeURIComponent(importId)}`),
+  compareResearchCandidates: (importIds) => request(
+    "/api/v1/research/candidate-comparisons",
+    jsonBody({ import_ids: importIds })
+  ),
   previewResearch: () => request("/api/v1/research/preview", { method: "POST" }),
   startResearch: (previewHash) => request(
     "/api/v1/research/runs",

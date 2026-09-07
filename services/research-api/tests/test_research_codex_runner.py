@@ -28,4 +28,8 @@ def test_public_research_runner_uses_search_before_exec_without_provider_overrid
     result = runner.run()
     assert result["cli_version"] == "codex-cli synthetic-research-1.0"
     assert result["argument_profile"] == ARGUMENT_PROFILE
-    assert result["result"].products == []
+    assert {item.insurer_id for item in result["result"].products} == {
+        "aia-hk",
+        "prudential-hk",
+    }
+    assert result["result"].leads[0].channel == "THIRD_PARTY_LEAD"

@@ -10,7 +10,8 @@ import threading
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, ClassVar
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, File, Form, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -22,6 +23,7 @@ from .crypto import KeyProtector
 from .domain import (
     AnalysisStatusRequest,
     BackupPasswordRequest,
+    CandidateComparisonRequest,
     CodexPreviewRequest,
     CodexRunRequest,
     EvidenceComparisonRequest,
@@ -41,7 +43,7 @@ from .migrations import SCHEMA_VERSION
 from .public_research import PublicResearchService
 from .research_codex_runner import ResearchCodexError, ResearchCodexRunner
 from .service import PolicyLensService, ServiceError
-from .web_fetcher import OfficialSourceFetcher
+from .web_fetcher import FetchedSource, OfficialSourceFetcher
 
 MAX_REQUEST_BYTES = 128 * 1024 * 1024
 MAX_BACKUP_BYTES = 120 * 1024 * 1024
@@ -64,6 +66,46 @@ class SafeEventLog:
         }
         with self.path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record, separators=(",", ":")) + "\n")
+
+
+class _SyntheticResearchSourceFetcher:
+    """Deterministic official-source fixture, enabled only by explicit test mode."""
+
+    NAMES: ClassVar[dict[str, str]] = {
+        "aia-hk": "SYNTHETIC Future Savings Plan",
+        "prudential-hk": "SYNTHETIC Retirement Plan",
+    }
+
+    def fetch(self, url: str, insurer_id: str) -> FetchedSource:
+        name = self.NAMES[insurer_id]
+        text = " ".join(
+            [
+                f"Official product name is {name}",
+                "September 2026 official edition",
+                "This product is issued in HK",
+                "Product category is LIFE_SAVINGS",
+                "The primary illustration currency is HKD",
+                f"Official insurer identity is {insurer_id}",
+                "Sale status is ACTIVE",
+                "Premium payment terms include 5 years",
+            ]
+        )
+        content = f"<html><body>{text}</body></html>".encode()
+        return FetchedSource(
+            canonical_url=url,
+            host=urlsplit(url).hostname or "",
+            status_code=200,
+            content_type="text/html",
+            content=content,
+            text=text,
+            sha256=hashlib.sha256(content).hexdigest(),
+            page_count=None,
+            etag='"synthetic-browser-v1"',
+            last_modified=None,
+        )
+
+    def close(self) -> None:
+        return None
 
 
 def create_app(
@@ -109,9 +151,30 @@ def create_app(
             timeout_seconds=timeout_seconds,
         )
     if research_runner is None:
-        research_runner = ResearchCodexRunner(data_dir)
+        research_command = "codex"
+        research_prefix_args: list[str] = []
+        research_timeout = 240.0
+        if os.environ.get("POLICYLENS_TEST_MODE") == "1":
+            research_command = os.environ.get(
+                "POLICYLENS_FAKE_RESEARCH_CODEX_COMMAND", research_command
+            )
+            fake_research_script = os.environ.get("POLICYLENS_FAKE_RESEARCH_CODEX_SCRIPT")
+            if fake_research_script:
+                research_prefix_args = [fake_research_script]
+            research_timeout = 15.0
+        research_runner = ResearchCodexRunner(
+            data_dir,
+            command=research_command,
+            prefix_args=research_prefix_args,
+            timeout_seconds=research_timeout,
+        )
     if source_fetcher is None:
-        source_fetcher = OfficialSourceFetcher()
+        source_fetcher = (
+            _SyntheticResearchSourceFetcher()
+            if os.environ.get("POLICYLENS_TEST_MODE") == "1"
+            and os.environ.get("POLICYLENS_FAKE_RESEARCH_SOURCE") == "1"
+            else OfficialSourceFetcher()
+        )
     research_threads: set[threading.Thread] = set()
     research_threads_lock = threading.Lock()
 
@@ -327,6 +390,25 @@ def create_app(
     @app.get("/api/v1/research/dashboard", tags=["research"])
     def research_dashboard() -> dict[str, object]:
         return public_research.dashboard()
+
+    @app.get("/api/v1/research/readiness", tags=["research"])
+    def research_readiness() -> dict[str, object]:
+        return public_research.readiness()
+
+    @app.get("/api/v1/research/candidates", tags=["research"])
+    def list_research_candidates(
+        run_id: str | None = Query(default=None, max_length=40),
+        status: str | None = Query(default=None, max_length=40),
+    ) -> list[dict[str, object]]:
+        return public_research.list_candidates(run_id=run_id, status=status)
+
+    @app.get("/api/v1/research/candidates/{import_id}", tags=["research"])
+    def get_research_candidate(import_id: str) -> dict[str, object]:
+        return public_research.candidate(import_id)
+
+    @app.post("/api/v1/research/candidate-comparisons", tags=["research"])
+    def compare_research_candidates(request: CandidateComparisonRequest) -> dict[str, object]:
+        return public_research.candidate_comparison(request)
 
     @app.post("/api/v1/research/preview", tags=["research"])
     def research_preview() -> dict[str, object]:

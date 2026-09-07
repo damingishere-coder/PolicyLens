@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+from urllib.parse import urlsplit
 
 from conftest import accept_all
 
 from policylens_api.domain import (
+    CandidateComparisonRequest,
     ImportReviewRequest,
     ResearchDiscoveryOutput,
     ResearchStartRequest,
@@ -13,14 +15,20 @@ from policylens_api.public_research import PublicResearchService
 from policylens_api.web_fetcher import FetchedSource
 
 
-def discovery_output(*, include_product: bool = True) -> ResearchDiscoveryOutput:
+def discovery_output(
+    *,
+    include_product: bool = True,
+    insurer_id: str = "aia-hk",
+    display_name: str = "Official Synthetic Future Savings Plan",
+    source_url: str = "https://www.aia.com.hk/synthetic/future-savings",
+) -> ResearchDiscoveryOutput:
     excerpts = {
-        "product.display_name": "Official Synthetic Future Savings Plan",
+        "product.display_name": f"Official product name is {display_name}",
         "product.version_label": "September 2026 official edition",
         "product.jurisdiction": "This product is issued in HK",
         "product.line_of_business": "Product category is LIFE_SAVINGS",
         "product.currency": "The primary illustration currency is HKD",
-        "product.insurer_id": "Official insurer identity is aia-hk",
+        "product.insurer_id": f"Official insurer identity is {insurer_id}",
         "product.sale_status": "Sale status is ACTIVE",
         "product.payment_term": "Premium payment terms include 5 years",
     }
@@ -28,22 +36,22 @@ def discovery_output(*, include_product: bool = True) -> ResearchDiscoveryOutput
     if include_product:
         products.append(
             {
-                "insurer_id": "aia-hk",
-                "display_name": "Official Synthetic Future Savings Plan",
+                "insurer_id": insurer_id,
+                "display_name": display_name,
                 "version_label": "September 2026 official edition",
                 "source_title": "Synthetic official product page",
-                "source_url": "https://www.aia.com.hk/synthetic/future-savings",
+                "source_url": source_url,
                 "document_type": "OFFICIAL_WEB",
                 "facts": [
                     {
                         "field_path": field,
                         "value": {
-                            "product.display_name": "Official Synthetic Future Savings Plan",
+                            "product.display_name": display_name,
                             "product.version_label": "September 2026 official edition",
                             "product.jurisdiction": "HK",
                             "product.line_of_business": "LIFE_SAVINGS",
                             "product.currency": "HKD",
-                            "product.insurer_id": "aia-hk",
+                            "product.insurer_id": insurer_id,
                             "product.sale_status": "ACTIVE",
                             "product.payment_term": "5 years",
                         }[field],
@@ -73,24 +81,35 @@ def discovery_output(*, include_product: bool = True) -> ResearchDiscoveryOutput
 
 
 class SyntheticFetcher:
-    def __init__(self) -> None:
+    def __init__(self, *outputs: ResearchDiscoveryOutput) -> None:
         self.calls = 0
+        self.outputs = outputs or (discovery_output(),)
 
     def fetch(self, url: str, insurer_id: str) -> FetchedSource:
         self.calls += 1
         body = (
             "<html><body>"
-            + " ".join(item.evidence_excerpt for item in discovery_output().products[0].facts)
+            + " ".join(
+                item.evidence_excerpt
+                for output in self.outputs
+                for product in output.products
+                for item in product.facts
+            )
             + "</body></html>"
         )
         content = body.encode()
         return FetchedSource(
             canonical_url=url,
-            host="www.aia.com.hk",
+            host=urlsplit(url).hostname or "",
             status_code=200,
             content_type="text/html",
             content=content,
-            text=" ".join(item.evidence_excerpt for item in discovery_output().products[0].facts),
+            text=" ".join(
+                item.evidence_excerpt
+                for output in self.outputs
+                for product in output.products
+                for item in product.facts
+            ),
             sha256=hashlib.sha256(content).hexdigest(),
             page_count=None,
             etag='"synthetic-v1"',
@@ -182,3 +201,55 @@ def test_third_party_lead_is_stored_but_never_fetched_or_published(service) -> N
     assert result["leads"][0]["import_id"] is None
     assert service.list_products() == []
     assert fetcher.calls == 0
+
+
+def test_official_candidates_are_browsable_searchable_comparable_and_remain_unverified(
+    service,
+) -> None:
+    research = PublicResearchService(service)
+    first = discovery_output()
+    second = discovery_output(
+        insurer_id="prudential-hk",
+        display_name="Official Synthetic Retirement Plan",
+        source_url="https://www.prudential.com.hk/synthetic/retirement-plan",
+    )
+    combined = ResearchDiscoveryOutput(
+        schema_version="1.0",
+        products=[*first.products, *second.products],
+        leads=[],
+    )
+    run_id = create_run(research)
+    result = research.apply_discovery(
+        run_id,
+        combined,
+        SyntheticFetcher(first, second),
+        cli_version="codex-cli synthetic",
+        argument_profile="LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V1",
+    )
+
+    candidates = research.list_candidates(run_id=run_id, status="WAITING_REVIEW")
+    assert len(candidates) == 2
+    assert {item["verification_label"] for item in candidates} == {"UNVERIFIED_CANDIDATE"}
+    assert all(item["source"]["canonical_url"].startswith("https://www.") for item in candidates)
+    assert all(not item["missing_fields"] for item in candidates)
+    assert {item["display_name"] for item in research.search("Synthetic")["candidates"]} == {
+        "Official Synthetic Future Savings Plan",
+        "Official Synthetic Retirement Plan",
+    }
+
+    comparison = research.candidate_comparison(
+        CandidateComparisonRequest(import_ids=[item["import_id"] for item in candidates])
+    )
+    assert len(comparison["candidates"]) == 2
+    identity_row = next(
+        item for item in comparison["rows"] if item["field_path"] == "product.display_name"
+    )
+    assert {cell["verification_status"] for cell in identity_row["cells"]} == {"UNVERIFIED"}
+    assert all(cell["excerpt"] for cell in identity_row["cells"])
+    assert result["insurer_outcomes"][2]["error_codes"] == ["NO_RESULT_RETURNED"]
+
+    reviewed = accept_all(service, service.get_import(candidates[0]["import_id"]))
+    completed_candidate = research.candidate(candidates[0]["import_id"])
+    assert completed_candidate["review_status"] == "COMPLETED"
+    assert completed_candidate["verification_label"] == "REVIEW_COMPLETED"
+    assert completed_candidate["published_product_version_id"] == reviewed["product_version_id"]

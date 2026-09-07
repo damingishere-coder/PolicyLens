@@ -60,6 +60,12 @@ interface ResearchDashboardData {
   active_hk_products: number;
   recent_runs: ResearchRunView[];
 }
+interface ResearchReadinessView {
+  ready: boolean;
+  manual_confirmation_required: true;
+  active_run_id: string | null;
+  checks: Array<{ id: string; ready: boolean; message: string }>;
+}
 interface ResearchPreviewView {
   scope: { jurisdiction: "HK"; categories: string[]; insurer_ids: string[]; max_products_per_insurer: number };
   insurers: Array<{ id: string; brand_name: string; legal_name: string; official_hosts: string[] }>;
@@ -92,6 +98,63 @@ interface ResearchRunView {
   cancel_requested: boolean;
   created_at: string;
   leads: ResearchLeadView[];
+  insurer_outcomes: Array<{
+    insurer_id: string;
+    brand_name: string;
+    status: string;
+    official_candidates: number;
+    waiting_review: number;
+    published: number;
+    rejected: number;
+    lead_only: number;
+    error_codes: string[];
+  }>;
+}
+
+interface ResearchCandidateView {
+  import_id: string;
+  run_id: string;
+  review_status: string;
+  verification_label: "UNVERIFIED_CANDIDATE" | "REVIEW_COMPLETED";
+  display_name: string;
+  version_label: string;
+  insurer_id: string;
+  jurisdiction: string | null;
+  line_of_business: string | null;
+  currency: string | null;
+  sale_status: string | null;
+  missing_fields: string[];
+  field_count: number;
+  published_product_version_id: string | null;
+  source: ImportView["source"] & { canonical_url?: string | null; fetched_at?: string | null };
+  fields: CandidateView[];
+}
+
+interface CandidateComparisonView {
+  candidates: Array<{
+    import_id: string;
+    display_name: string;
+    version_label: string;
+    insurer_id: string;
+    review_status: string;
+    verification_label: string;
+  }>;
+  rows: Array<{
+    field_path: string;
+    cells: Array<{
+      import_id: string;
+      candidate_id: string | null;
+      value: string | null;
+      unit: string | null;
+      verification_status: string;
+      guarantee_type: string;
+      source_authority: string | null;
+      page_number: number | null;
+      excerpt: string | null;
+      source_url: string | null;
+    }>;
+  }>;
+  notice: string;
 }
 
 interface EvidenceComparisonView {
@@ -106,6 +169,7 @@ interface EvidenceComparisonView {
 interface SearchResultView {
   query: string;
   products: ProductSummary[];
+  candidates: ResearchCandidateView[];
   sources: SourceView[];
 }
 
@@ -121,6 +185,7 @@ interface CandidateView {
   verification_status: string;
   value_origin: string;
   source_authority: string;
+  guarantee_type: string;
   decision: string | null;
 }
 
@@ -316,12 +381,18 @@ function Loading() {
 
 function DashboardPage({ go }: { go: (page: Page) => void }) {
   const [data, setData] = useState<ResearchDashboardData | null>(null);
+  const [readiness, setReadiness] = useState<ResearchReadinessView | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    policyLens.getResearchDashboard().then((value) => setData(value as ResearchDashboardData)).catch((reason) => setError(asError(reason)));
+    Promise.all([policyLens.getResearchDashboard(), policyLens.getResearchReadiness()])
+      .then(([dashboard, ready]) => {
+        setData(dashboard as ResearchDashboardData);
+        setReadiness(ready as ResearchReadinessView);
+      })
+      .catch((reason) => setError(asError(reason)));
   }, []);
   if (error) return <ErrorPanel message={error} />;
-  if (!data) return <Loading />;
+  if (!data || !readiness) return <Loading />;
   const cards: Array<[string, string, ReactNode]> = [
     ["首批保险公司", String(data.insurers.length), <ShieldCheck size={24} key="insurer" />],
     ["研究运行", String(data.research_runs), <FileSearch size={24} key="run" />],
@@ -330,6 +401,7 @@ function DashboardPage({ go }: { go: (page: Page) => void }) {
   ];
   return <>
     <PageHeader title="香港保险公开研究台" subtitle="主动发现公开产品资料，官方来源核验后再进入你的本地产品库" actions={<button className="button primary" onClick={() => go("hong-kong")}><Search size={18} />开始一次研究</button>} />
+    <Card className="readiness-panel"><div><div className="card-title"><h2><Laptop />研究准备度</h2><StatusBadge tone={readiness.ready ? "success" : "warning"}>{readiness.ready ? "可以开始" : "需要处理"}</StatusBadge></div><p>每次研究仍需先查看范围和用量预览，再由你单独确认；不会后台定时运行。</p></div><div className="readiness-checks">{readiness.checks.map((check) => <div key={check.id} className={check.ready ? "ready" : "blocked"}>{check.ready ? <Check /> : <CircleAlert />}<span>{check.message}</span></div>)}</div></Card>
     <div className="metric-grid">{cards.map(([label, value, icon]) => <Card className="metric" key={String(label)}><div className="metric__icon">{icon}</div><div><span>{label}</span><strong>{value}</strong></div></Card>)}</div>
     <div className="two-column">
       <Card><div className="card-title"><h2>真实研究闭环</h2><StatusBadge tone="success">公开资料优先</StatusBadge></div><ol className="flow-list"><li><Search />全网发现产品线索</li><li><ShieldCheck />只抓取预置官方域名</li><li><FileSearch />逐字匹配证据摘录</li><li><BadgeCheck />人工核验后发布产品</li><li><Scale />按字段和证据并排比较</li></ol></Card>
@@ -418,17 +490,25 @@ function HongKongResearchPage({ openImport, openProduct }: { openImport: (id: st
   const [run, setRun] = useState<ResearchRunView | null>(null);
   const [runs, setRuns] = useState<ResearchRunView[]>([]);
   const [products, setProducts] = useState<ProductSummary[]>([]);
+  const [candidates, setCandidates] = useState<ResearchCandidateView[]>([]);
+  const [readiness, setReadiness] = useState<ResearchReadinessView | null>(null);
+  const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
+  const [candidateComparison, setCandidateComparison] = useState<CandidateComparisonView | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const active = run && ["QUEUED", "DISCOVERING", "FETCHING"].includes(run.status);
   const refresh = useCallback(async () => {
-    const [runValue, productValue] = await Promise.all([
+    const [runValue, productValue, candidateValue, readinessValue] = await Promise.all([
       policyLens.listResearchRuns(),
-      policyLens.listResearchProducts(true)
+      policyLens.listResearchProducts(true),
+      policyLens.listResearchCandidates(),
+      policyLens.getResearchReadiness()
     ]);
     const recent = runValue as ResearchRunView[];
     setRuns(recent);
     setProducts(productValue as ProductSummary[]);
+    setCandidates(candidateValue as ResearchCandidateView[]);
+    setReadiness(readinessValue as ResearchReadinessView);
     setRun((current) => current ? recent.find((item) => item.id === current.id) ?? current : recent[0] ?? null);
   }, []);
   useEffect(() => { refresh().catch((reason) => setError(asError(reason))); }, [refresh]);
@@ -456,14 +536,31 @@ function HongKongResearchPage({ openImport, openProduct }: { openImport: (id: st
     if (!run) return;
     try { await policyLens.cancelResearch(run.id); setRun(await policyLens.getResearchRun(run.id) as ResearchRunView); } catch (reason) { setError(asError(reason)); }
   };
+  const toggleCandidate = (importId: string) => {
+    setCandidateComparison(null);
+    setSelectedCandidates((current) => current.includes(importId)
+      ? current.filter((item) => item !== importId)
+      : current.length < 4 ? [...current, importId] : current);
+  };
+  const compareCandidates = async () => {
+    if (selectedCandidates.length < 2) return;
+    setBusy(true); setError("");
+    try {
+      setCandidateComparison(await policyLens.compareResearchCandidates(selectedCandidates) as CandidateComparisonView);
+    } catch (reason) { setError(asError(reason)); } finally { setBusy(false); }
+  };
   const officialLeads = run?.leads.filter((item) => item.channel === "OFFICIAL_SEARCH") ?? [];
   const thirdPartyLeads = run?.leads.filter((item) => item.channel === "THIRD_PARTY_LEAD") ?? [];
   return <>
-    <PageHeader title="香港储蓄/年金主动研究" subtitle="友邦、保诚、宏利 · 全网发现线索 · 官方来源逐字验证" actions={<button className="button primary" disabled={busy || Boolean(active)} onClick={() => void prepare()}><Search size={18} />查看联网研究预览</button>} />
+    <PageHeader title="香港储蓄/年金主动研究" subtitle="友邦、保诚、宏利 · 全网发现线索 · 官方来源逐字验证" actions={<button className="button primary" disabled={busy || Boolean(active) || readiness?.ready === false} onClick={() => void prepare()}><Search size={18} />查看联网研究预览</button>} />
     {error && <ErrorPanel message={error} />}
+    {readiness && <div className={`notice ${readiness.ready ? "success" : "warning"}`}>{readiness.ready ? <BadgeCheck /> : <CircleAlert />}{readiness.ready ? "研究环境已就绪；点击后仍会先展示本次联网范围与用量预览。" : readiness.checks.filter((item) => !item.ready).map((item) => item.message).join("；")}</div>}
     <div className="research-insurers">{["友邦香港", "保诚香港", "宏利香港"].map((name) => <Card key={name}><ShieldCheck /><div><strong>{name}</strong><span>官方域名白名单已锁定</span></div></Card>)}</div>
     {preview && <Card className="research-preview"><div className="card-title"><h2><Sparkles />本次联网研究预览</h2><StatusBadge tone="warning">需要逐次确认</StatusBadge></div><p className="research-query">{preview.query_summary}</p><div className="two-column compact-columns"><div><h3>会发送</h3><ul>{preview.will_send.map((item) => <li key={item}>{item}</li>)}</ul></div><div><h3>不会发送</h3><ul>{preview.will_not_send.map((item) => <li key={item}>{item}</li>)}</ul></div></div><div className="notice warning"><CircleAlert />{preview.usage_notice}</div><code>预览校验 {preview.preview_hash.slice(0, 12)}…</code><label className="confirm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />我已查看范围和用量提示，同意本次只搜索公开资料</label><div className="form-actions"><button className="button secondary" onClick={() => setPreview(null)}>取消</button><button className="button primary" disabled={!confirmed || busy} onClick={() => void start()}><Search />确认并启动一次研究</button></div></Card>}
     {run && <Card className="research-run"><div className="card-title"><h2><FileSearch />最近运行</h2><ResearchStatus status={run.status} /></div><div className="run-summary"><span>候选产品 <strong>{run.summary.discovered_products ?? 0}</strong></span><span>待核验 <strong>{run.summary.waiting_review ?? 0}</strong></span><span>已拒绝 <strong>{run.summary.rejected_products ?? 0}</strong></span><span>线索 <strong>{run.summary.lead_only ?? 0}</strong></span></div>{active && <div className="notice"><span className="spinner" />Codex 正在发现公开线索并验证官方页面。可以离开本页，运行记录会保留。<button className="button secondary" onClick={() => void cancel()}>取消研究</button></div>}{run.error_code && <div className="notice warning"><CircleAlert />{run.error_code}</div>}{officialLeads.length > 0 && <div className="lead-list"><h3>官方候选</h3>{officialLeads.map((lead) => <article key={lead.id}><div><strong>{lead.title}</strong><small>{lead.insurer_id} · {lead.authority}</small><span>{lead.url}</span></div><div><ResearchStatus status={lead.status} />{lead.import_id && <button className="button secondary" onClick={() => openImport(lead.import_id!)}>逐项核验</button>}</div></article>)}</div>}{thirdPartyLeads.length > 0 && <details className="third-party-leads"><summary>第三方线索 {thirdPartyLeads.length} 条（不会作为事实）</summary>{thirdPartyLeads.map((lead) => <p key={lead.id}>{lead.title} · {lead.url}</p>)}</details>}</Card>}
+    {run && <Card className="insurer-outcomes"><div className="card-title"><h2>逐保险公司结果</h2><span>零结果也会给出明确原因</span></div><div className="outcome-grid">{run.insurer_outcomes.map((item) => <div key={item.insurer_id}><div><strong>{item.brand_name}</strong><ResearchStatus status={item.status} /></div><small>官方候选 {item.official_candidates} · 待核验 {item.waiting_review} · 第三方线索 {item.lead_only}</small>{item.error_codes.length > 0 && <p>{item.error_codes.join("、")}</p>}</div>)}</div></Card>}
+    <Card className="candidate-workbench"><div className="card-title"><div><h2><FileSearch />研究候选工作台</h2><span>候选生成后立即可浏览、选中和并排比较</span></div><div className="candidate-actions"><StatusBadge tone="warning">全部先视为未核验</StatusBadge><button className="button primary" disabled={selectedCandidates.length < 2 || busy} onClick={() => void compareCandidates()}><Scale />对比所选 {selectedCandidates.length || ""}</button></div></div>{candidates.length ? <div className="candidate-card-grid">{candidates.map((candidate) => <article className={`candidate-card ${selectedCandidates.includes(candidate.import_id) ? "selected" : ""}`} key={candidate.import_id}><label className="candidate-select"><input type="checkbox" checked={selectedCandidates.includes(candidate.import_id)} disabled={!selectedCandidates.includes(candidate.import_id) && selectedCandidates.length >= 4} onChange={() => toggleCandidate(candidate.import_id)} />加入待核验对比</label><div className="card-title"><div><h3>{candidate.display_name}</h3><small>{candidate.version_label} · {candidate.insurer_id}</small></div><StatusBadge tone={candidate.review_status === "WAITING_REVIEW" ? "warning" : "success"}>{candidate.review_status === "WAITING_REVIEW" ? "未核验候选" : "已完成核验"}</StatusBadge></div><dl><div><dt>类别</dt><dd>{candidate.line_of_business ?? "未知"}</dd></div><div><dt>币种</dt><dd>{candidate.currency ?? "未知"}</dd></div><div><dt>销售状态</dt><dd>{candidate.sale_status ?? "未知"}</dd></div><div><dt>候选字段</dt><dd>{candidate.field_count}</dd></div></dl><details><summary>查看字段证据</summary>{candidate.fields.map((field) => <div className="candidate-evidence" key={field.id}><strong>{fieldLabels[field.field_path] ?? field.field_path}：{field.value} {field.unit ?? ""}</strong><small>{field.source_authority} · {field.page_number ? `第 ${field.page_number} 页` : "网页正文"}</small><blockquote>{field.excerpt}</blockquote></div>)}</details><div className="candidate-source"><BookOpen /><a href={candidate.source.canonical_url ?? undefined} target="_blank" rel="noreferrer">{candidate.source.title}</a></div><button className="button secondary full" onClick={() => candidate.published_product_version_id ? openProduct(candidate.published_product_version_id) : openImport(candidate.import_id)}>{candidate.published_product_version_id ? "查看正式产品" : "逐项人工核验"}</button></article>)}</div> : <div className="small-empty"><FileSearch /><h2>尚无研究候选</h2><p>完成一次联网研究后，通过官方来源逐字验证的候选会立即显示在这里；无需先发布成正式产品。</p></div>}</Card>
+    {candidateComparison && <Card className="evidence-matrix candidate-matrix"><div className="card-title"><h2>待核验候选对比</h2><StatusBadge tone="warning">不是正式结论</StatusBadge></div><div className="matrix-scroll"><table><thead><tr><th>字段</th>{candidateComparison.candidates.map((candidate) => <th key={candidate.import_id}>{candidate.display_name}<small>{candidate.version_label}</small></th>)}</tr></thead><tbody>{candidateComparison.rows.map((row) => <tr key={row.field_path}><td><strong>{fieldLabels[row.field_path] ?? row.field_path}</strong></td>{row.cells.map((cell) => <td key={cell.import_id}><strong>{cell.value ?? "缺失"} {cell.unit ?? ""}</strong><small>{cell.verification_status} · {cell.guarantee_type}</small>{cell.excerpt && <details><summary>证据摘录</summary><blockquote>{cell.excerpt}</blockquote></details>}</td>)}</tr>)}</tbody></table></div><div className="notice warning"><CircleAlert />{candidateComparison.notice}</div></Card>}
     <Card className="table-card research-products"><div className="card-title table-heading"><h2>本地香港产品档案</h2><span>{products.length} 个版本</span></div>{products.length ? <table><thead><tr><th>产品</th><th>保险公司</th><th>类别</th><th>销售状态</th><th>核验</th><th /></tr></thead><tbody>{products.map((product) => <tr key={product.version_id}><td><strong>{product.display_name}</strong><small>{product.version_label}</small></td><td>{product.insurer_id ?? "未知"}</td><td>{product.product_category ?? product.line_of_business}</td><td>{product.sale_status ?? "未知"}</td><td><ResearchStatus status={product.record_status} /></td><td><button className="icon-button" aria-label={`查看产品 ${product.display_name}`} onClick={() => openProduct(product.version_id)}><ChevronRight /></button></td></tr>)}</tbody></table> : <div className="small-empty"><Search /><h2>尚无已抓取产品</h2><p>先运行一次公开研究。只有通过官方来源验证的候选才会进入人工核验。</p></div>}</Card>
     {runs.length > 1 && <div className="notice"><Clock3 />已保留 {runs.length} 次最近研究记录；服务重启不会自动重跑未完成任务。</div>}
   </>;
@@ -572,14 +669,14 @@ function ComparisonRows({ product }: { product: ProductDetail }) {
   return <div className="comparison-rows"><KeyRow label="标准年费率" value={money(String(product.premium_rate?.amount ?? ""), String(product.premium_rate?.currency ?? product.currency))} /><KeyRow label="续保模式" value={String(product.renewal_terms?.renewal_mode ?? "UNKNOWN")} /><KeyRow label="保证续保期间" value={`${String(product.renewal_terms?.guarantee_period_years ?? "未知")} 年`} /><KeyRow label="最高续保年龄" value={`${String(product.renewal_terms?.maximum_renewal_age ?? "未知")} 岁`} /><KeyRow label="调费范围" value={String(product.rate_adjustment_rule?.scope ?? "UNKNOWN")} /><KeyRow label="证据字段" value={`${product.facts.filter((item) => item.verification_status === "VERIFIED").length} / ${product.facts.length} 已核验`} /></div>;
 }
 
-function SearchPage({ query, openProduct }: { query: string; openProduct: (id: string) => void }) {
+function SearchPage({ query, openProduct, openImport }: { query: string; openProduct: (id: string) => void; openImport: (id: string) => void }) {
   const [result, setResult] = useState<SearchResultView | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
     if (query.trim().length < 2) { setResult(null); return; }
     policyLens.search(query).then((value) => setResult(value as SearchResultView)).catch((reason) => setError(asError(reason)));
   }, [query]);
-  return <><PageHeader title="本地证据搜索" subtitle={query ? `搜索“${query}”的本地产品和来源` : "输入至少两个字符，搜索已经保存的产品、版本与来源"} />{error && <ErrorPanel message={error} />}{query.trim().length < 2 ? <Card className="small-empty"><Search /><p>在顶部搜索框输入产品名称、版本或来源标题，然后按 Enter。</p></Card> : !result ? <Loading /> : <div className="two-column"><Card><div className="card-title"><h2>产品</h2><span>{result.products.length}</span></div>{result.products.length ? <div className="list">{result.products.map((product) => <button className="search-result" key={product.version_id} onClick={() => openProduct(product.version_id)}><FileCheck2 /><span><strong>{product.display_name}</strong><small>{product.version_label} · {product.record_status}</small></span><ChevronRight /></button>)}</div> : <div className="small-empty"><Search /><p>没有匹配产品。</p></div>}</Card><Card><div className="card-title"><h2>来源</h2><span>{result.sources.length}</span></div>{result.sources.length ? <div className="list">{result.sources.map((source) => <div className="list-row" key={source.id}><BookOpen /><div><strong>{source.title}</strong><span>{source.authority} · {source.status}</span></div></div>)}</div> : <div className="small-empty"><BookOpen /><p>没有匹配来源。</p></div>}</Card></div>}</>;
+  return <><PageHeader title="本地证据搜索" subtitle={query ? `搜索“${query}”的正式产品、待核验候选和来源` : "输入至少两个字符，搜索已经保存的产品、候选与来源"} />{error && <ErrorPanel message={error} />}{query.trim().length < 2 ? <Card className="small-empty"><Search /><p>在顶部搜索框输入产品名称、版本、保险公司或来源标题，然后按 Enter。</p></Card> : !result ? <Loading /> : <div className="search-grid"><Card><div className="card-title"><h2>正式产品</h2><span>{result.products.length}</span></div>{result.products.length ? <div className="list">{result.products.map((product) => <button className="search-result" key={product.version_id} onClick={() => openProduct(product.version_id)}><FileCheck2 /><span><strong>{product.display_name}</strong><small>{product.version_label} · {product.record_status}</small></span><ChevronRight /></button>)}</div> : <div className="small-empty"><Search /><p>没有匹配正式产品。</p></div>}</Card><Card><div className="card-title"><h2>待核验候选</h2><span>{result.candidates.length}</span></div>{result.candidates.length ? <div className="list">{result.candidates.map((candidate) => <button className="search-result" key={candidate.import_id} onClick={() => openImport(candidate.import_id)}><CircleAlert /><span><strong>{candidate.display_name}</strong><small>{candidate.version_label} · {candidate.review_status}</small></span><ChevronRight /></button>)}</div> : <div className="small-empty"><FileSearch /><p>没有匹配研究候选。</p></div>}</Card><Card><div className="card-title"><h2>来源</h2><span>{result.sources.length}</span></div>{result.sources.length ? <div className="list">{result.sources.map((source) => <div className="list-row" key={source.id}><BookOpen /><div><strong>{source.title}</strong><span>{source.authority} · {source.status}</span></div></div>)}</div> : <div className="small-empty"><BookOpen /><p>没有匹配来源。</p></div>}</Card></div>}</>;
 }
 
 function PlanningPage({ go }: { go: (page: Page) => void }) {
@@ -647,7 +744,7 @@ export default function App() {
   let content: ReactNode;
   switch (page) {
     case "dashboard": content = <DashboardPage go={go} />; break;
-    case "search": content = <SearchPage query={searchQuery} openProduct={openProduct} />; break;
+    case "search": content = <SearchPage query={searchQuery} openProduct={openProduct} openImport={openImport} />; break;
     case "policies": content = <PoliciesPage openPolicy={openPolicy} go={go} />; break;
     case "policy-detail": content = <PolicyDetailPage id={selectedId} back={() => go("policies")} />; break;
     case "mainland": content = <PlanningPage go={go} />; break;

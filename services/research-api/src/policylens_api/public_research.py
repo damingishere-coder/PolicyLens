@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import secrets
+import shutil
 from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
@@ -13,6 +14,7 @@ from sqlalchemy import and_, insert, select, update
 
 from .crypto import VAULT_AAD
 from .domain import (
+    CandidateComparisonRequest,
     EvidenceComparisonRequest,
     ResearchDiscoveredProduct,
     ResearchDiscoveryOutput,
@@ -27,6 +29,8 @@ from .models import (
     import_sessions,
     insurers,
     official_domains,
+    product_versions,
+    products,
     research_runs,
     source_documents,
     source_revisions,
@@ -71,6 +75,11 @@ REQUIRED_RESEARCH_FIELDS = {
     "product.currency",
     "product.insurer_id",
     "product.sale_status",
+}
+
+OFFICIAL_CANDIDATE_AUTHORITIES = {
+    SourceAuthority.INSURER_OFFICIAL_DISCLOSURE.value,
+    SourceAuthority.INSURER_OFFICIAL_WEB.value,
 }
 
 
@@ -246,6 +255,55 @@ class PublicResearchService:
             "import_id": item.import_id,
         }
 
+    @staticmethod
+    def _insurer_outcomes(leads, run_status: str) -> list[dict[str, Any]]:
+        outcomes = []
+        terminal = run_status not in {
+            ResearchRunStatus.QUEUED.value,
+            ResearchRunStatus.DISCOVERING.value,
+            ResearchRunStatus.FETCHING.value,
+        }
+        for insurer in INSURER_SEEDS:
+            matched = [item for item in leads if item.insurer_id == insurer["id"]]
+            official = [item for item in matched if item.discovery_channel == "OFFICIAL_SEARCH"]
+            third_party = [item for item in matched if item.discovery_channel == "THIRD_PARTY_LEAD"]
+            waiting = sum(item.status == "WAITING_REVIEW" for item in official)
+            published = sum(item.status.startswith("PUBLISHED_") for item in official)
+            rejected = sum(bool(item.rejection_code) for item in official)
+            errors = sorted({item.rejection_code for item in matched if item.rejection_code})
+            if terminal and not official:
+                errors = sorted(
+                    set(
+                        [*errors, "NO_OFFICIAL_CANDIDATE" if third_party else "NO_RESULT_RETURNED"]
+                    )
+                )
+            if waiting:
+                status = "WAITING_REVIEW"
+            elif published:
+                status = "PUBLISHED"
+            elif rejected:
+                status = "REJECTED"
+            elif third_party:
+                status = "LEAD_ONLY"
+            elif terminal:
+                status = "NO_RESULT"
+            else:
+                status = "SEARCHING"
+            outcomes.append(
+                {
+                    "insurer_id": insurer["id"],
+                    "brand_name": insurer["brand_name"],
+                    "status": status,
+                    "official_candidates": len(official),
+                    "waiting_review": waiting,
+                    "published": published,
+                    "rejected": rejected,
+                    "lead_only": len(third_party),
+                    "error_codes": errors,
+                }
+            )
+        return outcomes
+
     def get_run(self, run_id: str) -> dict[str, Any]:
         with self.core.db.research.connect() as connection:
             row = connection.execute(
@@ -272,6 +330,7 @@ class PublicResearchService:
             "started_at": row.started_at,
             "finished_at": row.finished_at,
             "leads": [self._lead_view(item) for item in leads],
+            "insurer_outcomes": self._insurer_outcomes(leads, row.status),
         }
 
     def list_runs(self, limit: int = 10) -> list[dict[str, Any]]:
@@ -654,16 +713,223 @@ class PublicResearchService:
 
     def dashboard(self) -> dict[str, Any]:
         runs = self.list_runs(5)
+        candidates = self.list_candidates(status="WAITING_REVIEW")
         products_view = [item for item in self.core.list_products() if item["jurisdiction"] == "HK"]
         return {
             "insurers": [
                 {"id": item["id"], "brand_name": item["brand_name"]} for item in INSURER_SEEDS
             ],
             "research_runs": len(runs),
-            "waiting_review": sum(int(item["summary"].get("waiting_review", 0)) for item in runs),
+            "waiting_review": len(candidates),
+            "candidate_products": len(self.list_candidates()),
             "hk_products": len(products_view),
             "active_hk_products": sum(item["record_status"] == "ACTIVE" for item in products_view),
             "recent_runs": runs,
+        }
+
+    def readiness(self) -> dict[str, Any]:
+        checks: list[dict[str, Any]] = []
+        database_ready = False
+        try:
+            with self.core.db.research.connect() as connection:
+                integrity = connection.exec_driver_sql("PRAGMA integrity_check").scalar_one()
+            database_ready = integrity == "ok"
+            checks.append(
+                {
+                    "id": "research_database",
+                    "ready": database_ready,
+                    "message": "研究数据库完整且迁移已就绪" if database_ready else "研究数据库完整性检查失败",
+                }
+            )
+        except Exception:
+            checks.append(
+                {"id": "research_database", "ready": False, "message": "无法读取研究数据库"}
+            )
+
+        vault = self.core.data_dir / "vault"
+        vault_ready = vault.is_dir() and os.access(vault, os.W_OK)
+        checks.append(
+            {
+                "id": "encrypted_vault",
+                "ready": vault_ready,
+                "message": "加密来源仓可写" if vault_ready else "加密来源仓不可写",
+            }
+        )
+
+        codex_command = os.environ.get("POLICYLENS_FAKE_CODEX_COMMAND", "codex")
+        cli_path = shutil.which(codex_command)
+        cli_ready = bool(cli_path)
+        checks.append(
+            {
+                "id": "codex_cli",
+                "ready": cli_ready,
+                "message": "Codex CLI 可用" if cli_ready else "未找到 Codex CLI，暂时不能启动联网研究",
+            }
+        )
+        active = next(
+            (
+                item
+                for item in self.list_runs(10)
+                if item["status"]
+                in {
+                    ResearchRunStatus.QUEUED.value,
+                    ResearchRunStatus.DISCOVERING.value,
+                    ResearchRunStatus.FETCHING.value,
+                }
+            ),
+            None,
+        )
+        checks.append(
+            {
+                "id": "research_slot",
+                "ready": active is None,
+                "message": "可以启动一次新研究" if active is None else f"研究 {active['id']} 正在运行",
+            }
+        )
+        return {
+            "ready": all(item["ready"] for item in checks),
+            "manual_confirmation_required": True,
+            "checks": checks,
+            "active_run_id": active["id"] if active else None,
+        }
+
+    def candidate(self, import_id: str) -> dict[str, Any]:
+        with self.core.db.research.connect() as connection:
+            lead = connection.execute(
+                select(discovery_leads).where(discovery_leads.c.import_id == import_id)
+            ).first()
+            if not lead:
+                raise NotFoundError("research candidate not found")
+            if (
+                lead.discovery_channel != "OFFICIAL_SEARCH"
+                or lead.authority not in OFFICIAL_CANDIDATE_AUTHORITIES
+            ):
+                raise ConflictError("only official research candidates can be viewed")
+            session = connection.execute(
+                select(import_sessions).where(import_sessions.c.id == import_id)
+            ).first()
+            if not session:
+                raise NotFoundError("candidate import session not found")
+        imported = self.core.get_import(import_id)
+        values = {item["field_path"]: item["value"] for item in imported["candidates"]}
+        published_version = None
+        if imported["status"] == "COMPLETED":
+            with self.core.db.research.connect() as connection:
+                match = and_(
+                    product_versions.c.source_id == session.source_id,
+                    product_versions.c.version_label
+                    == values.get("product.version_label", "未知版本"),
+                    products.c.display_name == values.get("product.display_name", lead.title),
+                )
+                insurer_id = values.get("product.insurer_id", lead.insurer_id)
+                if insurer_id:
+                    match = and_(match, products.c.insurer_id == insurer_id)
+                published_version = connection.execute(
+                    select(product_versions.c.id)
+                    .join(products, product_versions.c.product_id == products.c.id)
+                    .where(match)
+                    .order_by(product_versions.c.created_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+        missing = sorted(REQUIRED_RESEARCH_FIELDS - set(values))
+        return {
+            "import_id": import_id,
+            "run_id": lead.research_run_id,
+            "lead_id": lead.id,
+            "review_status": imported["status"],
+            "verification_label": (
+                "UNVERIFIED_CANDIDATE"
+                if imported["status"] == "WAITING_REVIEW"
+                else "REVIEW_COMPLETED"
+            ),
+            "display_name": values.get("product.display_name", lead.title),
+            "version_label": values.get("product.version_label", "未知版本"),
+            "insurer_id": values.get("product.insurer_id", lead.insurer_id),
+            "jurisdiction": values.get("product.jurisdiction"),
+            "line_of_business": values.get("product.line_of_business"),
+            "currency": values.get("product.currency"),
+            "sale_status": values.get("product.sale_status"),
+            "missing_fields": missing,
+            "field_count": len(imported["candidates"]),
+            "published_product_version_id": published_version,
+            "source": imported["source"],
+            "fields": imported["candidates"],
+        }
+
+    def list_candidates(
+        self, *, run_id: str | None = None, status: str | None = None
+    ) -> list[dict[str, Any]]:
+        if status not in {None, "WAITING_REVIEW", "COMPLETED"}:
+            raise ConflictError("candidate status must be WAITING_REVIEW or COMPLETED")
+        with self.core.db.research.connect() as connection:
+            query = (
+                select(discovery_leads.c.import_id)
+                .join(import_sessions, discovery_leads.c.import_id == import_sessions.c.id)
+                .where(
+                    and_(
+                        discovery_leads.c.discovery_channel == "OFFICIAL_SEARCH",
+                        discovery_leads.c.authority.in_(OFFICIAL_CANDIDATE_AUTHORITIES),
+                        discovery_leads.c.import_id.is_not(None),
+                    )
+                )
+                .order_by(import_sessions.c.created_at.desc())
+                .limit(100)
+            )
+            if run_id:
+                query = query.where(discovery_leads.c.research_run_id == run_id)
+            if status:
+                query = query.where(import_sessions.c.status == status)
+            ids = list(connection.execute(query).scalars())
+        return [self.candidate(import_id) for import_id in ids]
+
+    def candidate_comparison(self, request: CandidateComparisonRequest) -> dict[str, Any]:
+        candidates = [self.candidate(import_id) for import_id in request.import_ids]
+        fields = sorted(
+            {
+                item["field_path"]
+                for candidate in candidates
+                for item in candidate["fields"]
+                if item["decision"] != "REJECT"
+            }
+        )
+        rows = []
+        for field in fields:
+            cells = []
+            for candidate in candidates:
+                value = next(
+                    (item for item in candidate["fields"] if item["field_path"] == field), None
+                )
+                cells.append(
+                    {
+                        "import_id": candidate["import_id"],
+                        "candidate_id": value["id"] if value else None,
+                        "value": value["value"] if value else None,
+                        "unit": value["unit"] if value else None,
+                        "verification_status": (
+                            value["verification_status"] if value else "UNKNOWN"
+                        ),
+                        "guarantee_type": value["guarantee_type"] if value else "UNKNOWN",
+                        "source_authority": value["source_authority"] if value else None,
+                        "page_number": value["page_number"] if value else None,
+                        "excerpt": value["excerpt"] if value else None,
+                        "source_url": candidate["source"].get("canonical_url"),
+                    }
+                )
+            rows.append({"field_path": field, "cells": cells})
+        return {
+            "candidates": [
+                {
+                    "import_id": item["import_id"],
+                    "display_name": item["display_name"],
+                    "version_label": item["version_label"],
+                    "insurer_id": item["insurer_id"],
+                    "review_status": item["review_status"],
+                    "verification_label": item["verification_label"],
+                }
+                for item in candidates
+            ],
+            "rows": rows,
+            "notice": "这是官方来源候选的待核验对比，不是正式产品结论；发布前必须逐项人工核验。",
         }
 
     def search(self, query: str) -> dict[str, Any]:
@@ -679,7 +945,20 @@ class PublicResearchService:
         source_results = [
             item for item in self.core.list_sources() if needle in str(item["title"]).casefold()
         ][:20]
-        return {"query": query.strip(), "products": product_results, "sources": source_results}
+        candidate_results = [
+            item
+            for item in self.list_candidates()
+            if needle in str(item["display_name"]).casefold()
+            or needle in str(item["version_label"]).casefold()
+            or needle in str(item["insurer_id"]).casefold()
+            or needle in str(item["source"]["title"]).casefold()
+        ][:20]
+        return {
+            "query": query.strip(),
+            "products": product_results,
+            "candidates": candidate_results,
+            "sources": source_results,
+        }
 
     def evidence_comparison(self, request: EvidenceComparisonRequest) -> dict[str, Any]:
         product_views = [self.core.get_product(item) for item in request.product_version_ids]

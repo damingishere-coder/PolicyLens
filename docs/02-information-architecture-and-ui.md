@@ -19,22 +19,24 @@ V1 采用已经确认的蓝白 Apple 风格：大面积留白、克制的蓝色�
 
 ## 14 个确认页面
 
-| 编号 | 页面 | V1 状态 | 核心交互 |
-|---|---|---|---|
-| 01 | Dashboard | 完整实现 | 成员/保单摘要、到期、缺口、待核实、最近导入 |
-| 02 | Policy Archive | 完整实现 | 搜索、筛选、新建、导入、核心/团险/赠险分类 |
-| 03 | Policy Detail | 完整实现 | 责任、限制、续保、文件、证据、版本时间线 |
-| 04 | Mainland Library | 完整实现 | 类别筛选、版本状态、官方来源、加入比较 |
-| 05 | Hong Kong Library | 完整实现 | 币种、保证/非保证、跨境服务提示、加入比较 |
-| 06 | Pet Insurance Library | 完整实现 | 宠物条件、既往症/品种限制、医院与赔付维度 |
-| 07 | Other Lines Roadmap | 占位实现 | 车险、企业险等卡片、范围说明，不展示虚构产品 |
-| 08 | Product Detail & Evidence | 完整实现 | 字段级来源、原文定位、版本、冲突和核验 |
-| 09 | Comparison & Codex | 完整实现 | 同口径表格、确定性指标、AI 草稿与引用 |
-| 10 | Import Verification | 完整实现 | 文件预览、候选字段、逐项确认、重复/冲突提示 |
-| 11 | Retirement Planner | 完整实现 | 现金流编辑、寿命/汇率情景、图表、IRR 与导出 |
-| 12 | Source Center | 完整实现 | 来源分级、版本、哈希、失效检查、引用关系 |
-| 13 | Review Reminders | 完整实现 | 本地日历、规则、完成记录、延后和复盘清单 |
-| 14 | Settings, Privacy & Codex | 完整实现 | 数据目录、备份、AI 发送预览、诊断与免责声明 |
+14 个视觉页面全部保留，但首次交付只激活核心闭环；空状态页面必须明确标注后续 V1，不能伪造可用功能。
+
+| 编号 | 页面 | 首次交付 | 完整 V1 | 核心交互 |
+|---|---|---|---|---|
+| 01 | Dashboard | 最小实现 | 完整实现 | 首次仅显示档案、待核实和最近导入摘要 |
+| 02 | Policy Archive | 完整实现 | 完整实现 | 搜索、筛选、新建、导入、核心/团险/赠险分类 |
+| 03 | Policy Detail | 完整实现 | 完整实现 | 责任、限制、续保、费率、文件、证据、版本时间线 |
+| 04 | Mainland Library | 可点击空状态 | 完整实现 | 后续开放类别筛选、官方来源和加入比较 |
+| 05 | Hong Kong Library | 可点击空状态 | 完整实现 | 后续开放币种、保证/非保证和跨境服务提示 |
+| 06 | Pet Insurance Library | 可点击空状态 | 完整实现 | 后续开放宠物条件、医院与赔付维度 |
+| 07 | Other Lines Roadmap | 占位实现 | 占位实现 | 车险、企业险等卡片、范围说明，不展示虚构产品 |
+| 08 | Product Detail & Evidence | 完整实现 | 完整实现 | 字段级来源、原文定位、版本、冲突和核验 |
+| 09 | Comparison & Codex | 基础比较与 Codex | 完整实现 | 首次只做两产品字段比较和受控 AI 草稿 |
+| 10 | Import Verification | 文本 PDF/手工 | 完整实现 | 文件预览、候选字段、逐项确认、重复/冲突提示 |
+| 11 | Retirement Planner | 可点击空状态 | 完整实现 | 后续开放现金流、寿命/汇率、IRR 与导出 |
+| 12 | Source Center | 完整实现 | 完整实现 | 来源权威性、版本、哈希、失效检查、引用关系 |
+| 13 | Review Reminders | 可点击空状态 | 完整实现 | 后续开放本地日历、规则和复盘清单 |
+| 14 | Settings, Privacy & Codex | 完整实现 | 完整实现 | 数据目录、恢复密码、备份、AI 外发预览和免责声明 |
 
 ## 关键状态组件
 
@@ -42,7 +44,7 @@ V1 采用已经确认的蓝白 Apple 风格：大面积留白、克制的蓝色�
 - `UnknownBadge`：尚无足够证据，禁止被摘要成确定事实。
 - `ConflictBadge`：两个或更多来源不一致，可打开差异视图。
 - `StaleBadge`：超过复查期限或发现更新版本。
-- `EstimatedBadge`：计算或手工假设，显示公式/假设。
+- `EstimatedBadge`：计算或手工假设的展示标签，对应 `ValueOrigin=DETERMINISTIC_CALCULATION` 或 `USER_ASSUMPTION`，不是 `VerificationStatus`。
 - `AiDraftBadge`：Codex 生成，等待人工接受；永不等同已核验。
 
 ## 可访问性与空状态

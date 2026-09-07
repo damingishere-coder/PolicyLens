@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://policylens.local/schemas/codex-analysis-v1.json",
+  "title": "PolicyLens Codex Analysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "differences",
+    "unknowns",
+    "risks",
+    "questions_for_human_review",
+    "calculation_refs"
+  ],
+  "properties": {
+    "summary": { "type": "string", "maxLength": 4000 },
+    "differences": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "explanation", "evidence_ids"],
+        "properties": {
+          "title": { "type": "string", "maxLength": 200 },
+          "explanation": { "type": "string", "maxLength": 2000 },
+          "evidence_ids": {
+            "type": "array",
+            "maxItems": 12,
+            "items": { "type": "string", "pattern": "^EV-[A-Z0-9-]+$" }
+          }
+        }
+      }
+    },
+    "unknowns": { "type": "array", "maxItems": 30, "items": { "type": "string", "maxLength": 1000 } },
+    "risks": { "type": "array", "maxItems": 30, "items": { "type": "string", "maxLength": 1000 } },
+    "questions_for_human_review": { "type": "array", "maxItems": 30, "items": { "type": "string", "maxLength": 1000 } },
+    "calculation_refs": { "type": "array", "maxItems": 30, "items": { "type": "string", "pattern": "^CALC-[A-Z0-9-]+$" } }
+  }
+}

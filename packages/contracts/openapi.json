@@ -1,0 +1,2294 @@
+{
+  "components": {
+    "schemas": {
+      "AnalysisStatusRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "enum": [
+              "ACCEPTED_AS_NOTE",
+              "REJECTED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "AnalysisStatusRequest",
+        "type": "object"
+      },
+      "BackupPasswordRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "maxLength": 256,
+            "minLength": 12,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "BackupPasswordRequest",
+        "type": "object"
+      },
+      "Body_import_pdf_api_v1_imports_pdf_post": {
+        "properties": {
+          "authority": {
+            "$ref": "#/components/schemas/SourceAuthority"
+          },
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "authority"
+        ],
+        "title": "Body_import_pdf_api_v1_imports_pdf_post",
+        "type": "object"
+      },
+      "Body_upload_restore_preview_api_v1_restores_upload_preview_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 256,
+            "minLength": 12,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "password"
+        ],
+        "title": "Body_upload_restore_preview_api_v1_restores_upload_preview_post",
+        "type": "object"
+      },
+      "CandidateDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {
+            "title": "Candidate Id",
+            "type": "string"
+          },
+          "decision": {
+            "enum": [
+              "ACCEPT",
+              "EDIT",
+              "REJECT",
+              "KEEP_UNVERIFIED"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "edited_value": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited Value"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "decision"
+        ],
+        "title": "CandidateDecision",
+        "type": "object"
+      },
+      "CodexAnalysisResult": {
+        "additionalProperties": false,
+        "properties": {
+          "calculation_refs": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Calculation Refs",
+            "type": "array"
+          },
+          "differences": {
+            "items": {
+              "$ref": "#/components/schemas/CodexDifference"
+            },
+            "maxItems": 20,
+            "title": "Differences",
+            "type": "array"
+          },
+          "questions_for_human_review": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Questions For Human Review",
+            "type": "array"
+          },
+          "risks": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Risks",
+            "type": "array"
+          },
+          "summary": {
+            "maxLength": 4000,
+            "title": "Summary",
+            "type": "string"
+          },
+          "unknowns": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Unknowns",
+            "type": "array"
+          }
+        },
+        "required": [
+          "summary",
+          "differences",
+          "unknowns",
+          "risks",
+          "questions_for_human_review",
+          "calculation_refs"
+        ],
+        "title": "CodexAnalysisResult",
+        "type": "object"
+      },
+      "CodexDifference": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "maxLength": 2000,
+            "title": "Explanation",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "explanation",
+          "evidence_ids"
+        ],
+        "title": "CodexDifference",
+        "type": "object"
+      },
+      "CodexExternalComparison": {
+        "additionalProperties": false,
+        "properties": {
+          "evidenceExcerpts": {
+            "items": {
+              "$ref": "#/components/schemas/CodexExternalEvidence"
+            },
+            "maxItems": 12,
+            "title": "Evidenceexcerpts",
+            "type": "array"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/CodexExternalProduct"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Products",
+            "type": "array"
+          }
+        },
+        "required": [
+          "products",
+          "evidenceExcerpts"
+        ],
+        "title": "CodexExternalComparison",
+        "type": "object"
+      },
+      "CodexExternalEvidence": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "$ref": "#/components/schemas/SourceAuthority"
+          },
+          "evidenceId": {
+            "pattern": "^EV-[A-Z0-9-]+$",
+            "title": "Evidenceid",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 600,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidenceId",
+          "text",
+          "authority"
+        ],
+        "title": "CodexExternalEvidence",
+        "type": "object"
+      },
+      "CodexExternalFact": {
+        "additionalProperties": false,
+        "properties": {
+          "evidenceIds": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Evidenceids",
+            "type": "array"
+          },
+          "field": {
+            "maxLength": 120,
+            "title": "Field",
+            "type": "string"
+          },
+          "guaranteeType": {
+            "$ref": "#/components/schemas/GuaranteeType"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "value": {
+            "maxLength": 1200,
+            "title": "Value",
+            "type": "string"
+          },
+          "valueOrigin": {
+            "$ref": "#/components/schemas/ValueOrigin"
+          },
+          "verificationStatus": {
+            "$ref": "#/components/schemas/VerificationStatus"
+          }
+        },
+        "required": [
+          "field",
+          "value",
+          "guaranteeType",
+          "verificationStatus",
+          "valueOrigin",
+          "evidenceIds"
+        ],
+        "title": "CodexExternalFact",
+        "type": "object"
+      },
+      "CodexExternalPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "comparison": {
+            "$ref": "#/components/schemas/CodexExternalComparison"
+          },
+          "schemaVersion": {
+            "const": "1.0",
+            "title": "Schemaversion",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "comparison"
+        ],
+        "title": "CodexExternalPayload",
+        "type": "object"
+      },
+      "CodexExternalProduct": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "displayName": {
+            "maxLength": 160,
+            "title": "Displayname",
+            "type": "string"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/CodexExternalFact"
+            },
+            "maxItems": 50,
+            "title": "Facts",
+            "type": "array"
+          },
+          "jurisdiction": {
+            "maxLength": 30,
+            "title": "Jurisdiction",
+            "type": "string"
+          },
+          "publicId": {
+            "pattern": "^PUB-[A-F0-9]+$",
+            "title": "Publicid",
+            "type": "string"
+          },
+          "versionLabel": {
+            "maxLength": 100,
+            "title": "Versionlabel",
+            "type": "string"
+          }
+        },
+        "required": [
+          "publicId",
+          "displayName",
+          "versionLabel",
+          "jurisdiction",
+          "currency",
+          "facts"
+        ],
+        "title": "CodexExternalProduct",
+        "type": "object"
+      },
+      "CodexPreviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ids"
+          },
+          "product_version_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Product Version Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "product_version_ids"
+        ],
+        "title": "CodexPreviewRequest",
+        "type": "object"
+      },
+      "CodexRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CodexExternalPayload"
+          }
+        },
+        "required": [
+          "confirmed",
+          "payload"
+        ],
+        "title": "CodexRunRequest",
+        "type": "object"
+      },
+      "EvidenceComparisonRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "product_version_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4,
+            "minItems": 2,
+            "title": "Product Version Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "product_version_ids"
+        ],
+        "title": "EvidenceComparisonRequest",
+        "type": "object"
+      },
+      "GuaranteeType": {
+        "enum": [
+          "CONTRACT_GUARANTEED",
+          "NON_GUARANTEED",
+          "UNKNOWN"
+        ],
+        "title": "GuaranteeType",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ImportReviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateDecision"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Decisions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "decisions"
+        ],
+        "title": "ImportReviewRequest",
+        "type": "object"
+      },
+      "ManualMaterialRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "annual_premium": {
+            "pattern": "^-?\\d+(?:\\.\\d{1,4})?$",
+            "title": "Annual Premium",
+            "type": "string"
+          },
+          "benefit_limit": {
+            "anyOf": [
+              {
+                "pattern": "^-?\\d+(?:\\.\\d{1,4})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benefit Limit"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "evidence_note": {
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Evidence Note",
+            "type": "string"
+          },
+          "guarantee_period_years": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guarantee Period Years"
+          },
+          "jurisdiction": {
+            "enum": [
+              "CN_MAINLAND",
+              "HK"
+            ],
+            "title": "Jurisdiction",
+            "type": "string"
+          },
+          "line_of_business": {
+            "enum": [
+              "MEDICAL",
+              "ACCIDENT",
+              "CRITICAL_ILLNESS",
+              "ANNUITY",
+              "LIFE_SAVINGS",
+              "OTHER"
+            ],
+            "title": "Line Of Business",
+            "type": "string"
+          },
+          "maximum_renewal_age": {
+            "anyOf": [
+              {
+                "maximum": 130.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Renewal Age"
+          },
+          "rate_adjustment_scope": {
+            "$ref": "#/components/schemas/RateAdjustmentScope"
+          },
+          "renewal_mode": {
+            "$ref": "#/components/schemas/RenewalMode"
+          },
+          "source_authority": {
+            "$ref": "#/components/schemas/SourceAuthority",
+            "default": "UNATTRIBUTED"
+          },
+          "version_label": {
+            "default": "手工版本 1",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Version Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "display_name",
+          "jurisdiction",
+          "line_of_business",
+          "currency",
+          "annual_premium",
+          "renewal_mode",
+          "rate_adjustment_scope",
+          "evidence_note"
+        ],
+        "title": "ManualMaterialRequest",
+        "type": "object"
+      },
+      "PolicyCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "enum": [
+              "CORE",
+              "GROUP",
+              "GIFT",
+              "UNCONFIRMED"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "due_amount": {
+            "pattern": "^-?\\d+(?:\\.\\d{1,4})?$",
+            "title": "Due Amount",
+            "type": "string"
+          },
+          "due_date": {
+            "format": "date",
+            "title": "Due Date",
+            "type": "string"
+          },
+          "frequency": {
+            "enum": [
+              "MONTHLY",
+              "QUARTERLY",
+              "SEMI_ANNUAL",
+              "ANNUAL",
+              "SINGLE"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "member_nickname": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Member Nickname",
+            "type": "string"
+          },
+          "paid_amount": {
+            "anyOf": [
+              {
+                "pattern": "^-?\\d+(?:\\.\\d{1,4})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Amount"
+          },
+          "paid_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Date"
+          },
+          "product_version_id": {
+            "title": "Product Version Id",
+            "type": "string"
+          },
+          "status": {
+            "default": "ACTIVE",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "EXPIRED",
+              "ARCHIVED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "member_nickname",
+          "product_version_id",
+          "category",
+          "due_amount",
+          "currency",
+          "frequency",
+          "due_date"
+        ],
+        "title": "PolicyCreateRequest",
+        "type": "object"
+      },
+      "RateAdjustmentScope": {
+        "enum": [
+          "INDIVIDUAL",
+          "COHORT",
+          "PORTFOLIO",
+          "REGULATORY",
+          "UNKNOWN"
+        ],
+        "title": "RateAdjustmentScope",
+        "type": "string"
+      },
+      "RenewalMode": {
+        "enum": [
+          "GUARANTEED_RENEWAL",
+          "CONDITIONAL_RENEWAL",
+          "NON_GUARANTEED_RENEWAL",
+          "NON_RENEWABLE",
+          "UNKNOWN"
+        ],
+        "title": "RenewalMode",
+        "type": "string"
+      },
+      "ResearchStartRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          },
+          "preview_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Preview Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmed",
+          "preview_hash"
+        ],
+        "title": "ResearchStartRequest",
+        "type": "object"
+      },
+      "RestoreCommitRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "restore_token": {
+            "maxLength": 200,
+            "minLength": 20,
+            "title": "Restore Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "restore_token"
+        ],
+        "title": "RestoreCommitRequest",
+        "type": "object"
+      },
+      "SaveAnalysisRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "argument_profile": {
+            "const": "EPHEMERAL_JSON_READ_ONLY_SCHEMA_V1",
+            "title": "Argument Profile",
+            "type": "string"
+          },
+          "cli_version": {
+            "maxLength": 120,
+            "title": "Cli Version",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "exit_status": {
+            "default": 0,
+            "title": "Exit Status",
+            "type": "integer"
+          },
+          "preview_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Preview Hash",
+            "type": "string"
+          },
+          "prompt_template_version": {
+            "const": "policylens-analysis-v1",
+            "title": "Prompt Template Version",
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/CodexAnalysisResult"
+          },
+          "schema_valid": {
+            "const": true,
+            "title": "Schema Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "preview_hash",
+          "evidence_ids",
+          "result",
+          "cli_version",
+          "argument_profile",
+          "prompt_template_version",
+          "schema_valid"
+        ],
+        "title": "SaveAnalysisRequest",
+        "type": "object"
+      },
+      "SemanticEnumsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "source_authorities": {
+            "items": {
+              "$ref": "#/components/schemas/SourceAuthority"
+            },
+            "title": "Source Authorities",
+            "type": "array"
+          },
+          "value_origins": {
+            "items": {
+              "$ref": "#/components/schemas/ValueOrigin"
+            },
+            "title": "Value Origins",
+            "type": "array"
+          },
+          "verification_statuses": {
+            "items": {
+              "$ref": "#/components/schemas/VerificationStatus"
+            },
+            "title": "Verification Statuses",
+            "type": "array"
+          }
+        },
+        "required": [
+          "verification_statuses",
+          "value_origins",
+          "source_authorities"
+        ],
+        "title": "SemanticEnumsResponse",
+        "type": "object"
+      },
+      "SourceAuthority": {
+        "enum": [
+          "CONTRACT_DOCUMENT",
+          "REGULATOR_PUBLICATION",
+          "INSURER_OFFICIAL_DISCLOSURE",
+          "INSURER_OFFICIAL_WEB",
+          "THIRD_PARTY_REFERENCE",
+          "UNATTRIBUTED"
+        ],
+        "title": "SourceAuthority",
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "ValueOrigin": {
+        "enum": [
+          "MANUAL_ENTRY",
+          "STRUCTURED_IMPORT",
+          "RULE_EXTRACTION",
+          "AI_EXTRACTION",
+          "DETERMINISTIC_CALCULATION",
+          "USER_ASSUMPTION"
+        ],
+        "title": "ValueOrigin",
+        "type": "string"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "UNVERIFIED",
+          "VERIFIED",
+          "CONFLICTING",
+          "STALE",
+          "REJECTED"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "title": "PolicyLens Local Research API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/analyses": {
+      "post": {
+        "operationId": "save_analysis_api_v1_analyses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Save Analysis Api V1 Analyses Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Analysis",
+        "tags": [
+          "codex"
+        ]
+      }
+    },
+    "/api/v1/analyses/{analysis_id}": {
+      "get": {
+        "operationId": "get_analysis_api_v1_analyses__analysis_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "analysis_id",
+            "required": true,
+            "schema": {
+              "title": "Analysis Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Analysis Api V1 Analyses  Analysis Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Analysis",
+        "tags": [
+          "codex"
+        ]
+      }
+    },
+    "/api/v1/analyses/{analysis_id}/status": {
+      "patch": {
+        "operationId": "update_analysis_status_api_v1_analyses__analysis_id__status_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "analysis_id",
+            "required": true,
+            "schema": {
+              "title": "Analysis Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Analysis Status Api V1 Analyses  Analysis Id  Status Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Analysis Status",
+        "tags": [
+          "codex"
+        ]
+      }
+    },
+    "/api/v1/backups/download": {
+      "post": {
+        "operationId": "download_backup_api_v1_backups_download_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Backup",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/api/v1/codex/cancel": {
+      "post": {
+        "operationId": "cancel_codex_api_v1_codex_cancel_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Cancel Codex Api V1 Codex Cancel Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Cancel Codex",
+        "tags": [
+          "codex"
+        ]
+      }
+    },
+    "/api/v1/codex/preview": {
+      "post": {
+        "operationId": "codex_preview_api_v1_codex_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodexPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Codex Preview Api V1 Codex Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Codex Preview",
+        "tags": [
+          "codex"
+        ]
+      }
+    },
+    "/api/v1/codex/run": {
+      "post": {
+        "operationId": "run_codex_api_v1_codex_run_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodexRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Codex Api V1 Codex Run Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Codex",
+        "tags": [
+          "codex"
+        ]
+      }
+    },
+    "/api/v1/comparisons/basic": {
+      "post": {
+        "operationId": "compare_api_v1_comparisons_basic_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodexPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Compare Api V1 Comparisons Basic Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare",
+        "tags": [
+          "comparison"
+        ]
+      }
+    },
+    "/api/v1/comparisons/evidence": {
+      "post": {
+        "operationId": "evidence_compare_api_v1_comparisons_evidence_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Evidence Compare Api V1 Comparisons Evidence Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evidence Compare",
+        "tags": [
+          "comparison"
+        ]
+      }
+    },
+    "/api/v1/contracts/enums": {
+      "get": {
+        "operationId": "semantic_enums_api_v1_contracts_enums_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SemanticEnumsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Semantic Enums",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "operationId": "dashboard_api_v1_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Dashboard Api V1 Dashboard Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Dashboard",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/imports": {
+      "get": {
+        "operationId": "list_imports_api_v1_imports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Imports Api V1 Imports Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Imports",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/api/v1/imports/manual": {
+      "post": {
+        "operationId": "import_manual_api_v1_imports_manual_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualMaterialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Import Manual Api V1 Imports Manual Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Manual",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/api/v1/imports/pdf": {
+      "post": {
+        "operationId": "import_pdf_api_v1_imports_pdf_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_pdf_api_v1_imports_pdf_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Import Pdf Api V1 Imports Pdf Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Pdf",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/api/v1/imports/{import_id}": {
+      "get": {
+        "operationId": "get_import_api_v1_imports__import_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "required": true,
+            "schema": {
+              "title": "Import Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Import Api V1 Imports  Import Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Import",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/api/v1/imports/{import_id}/review": {
+      "post": {
+        "operationId": "review_import_api_v1_imports__import_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "required": true,
+            "schema": {
+              "title": "Import Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Review Import Api V1 Imports  Import Id  Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Import",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/api/v1/policies": {
+      "get": {
+        "operationId": "list_policies_api_v1_policies_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Policies Api V1 Policies Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Policies",
+        "tags": [
+          "policies"
+        ]
+      },
+      "post": {
+        "operationId": "create_policy_api_v1_policies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Policy Api V1 Policies Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Policy",
+        "tags": [
+          "policies"
+        ]
+      }
+    },
+    "/api/v1/policies/{policy_id}": {
+      "get": {
+        "operationId": "get_policy_api_v1_policies__policy_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_id",
+            "required": true,
+            "schema": {
+              "title": "Policy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Policy Api V1 Policies  Policy Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Policy",
+        "tags": [
+          "policies"
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "list_products_api_v1_products_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_drafts",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Drafts",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Products Api V1 Products Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Products",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/v1/products/{version_id}": {
+      "get": {
+        "operationId": "get_product_api_v1_products__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Product Api V1 Products  Version Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/v1/research/dashboard": {
+      "get": {
+        "operationId": "research_dashboard_api_v1_research_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Research Dashboard Api V1 Research Dashboard Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Research Dashboard",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/preview": {
+      "post": {
+        "operationId": "research_preview_api_v1_research_preview_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Research Preview Api V1 Research Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Research Preview",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/products": {
+      "get": {
+        "operationId": "list_research_products_api_v1_research_products_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_drafts",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Drafts",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Research Products Api V1 Research Products Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Research Products",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/runs": {
+      "get": {
+        "operationId": "list_research_runs_api_v1_research_runs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Research Runs Api V1 Research Runs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Research Runs",
+        "tags": [
+          "research"
+        ]
+      },
+      "post": {
+        "operationId": "run_public_research_api_v1_research_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchStartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Public Research Api V1 Research Runs Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Public Research",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/runs/{run_id}": {
+      "get": {
+        "operationId": "get_research_run_api_v1_research_runs__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Research Run Api V1 Research Runs  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Research Run",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/research/runs/{run_id}/cancel": {
+      "post": {
+        "operationId": "cancel_public_research_api_v1_research_runs__run_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Cancel Public Research Api V1 Research Runs  Run Id  Cancel Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Public Research",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/restores/commit": {
+      "post": {
+        "operationId": "commit_restore_api_v1_restores_commit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreCommitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Commit Restore Api V1 Restores Commit Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Commit Restore",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/api/v1/restores/upload-preview": {
+      "post": {
+        "operationId": "upload_restore_preview_api_v1_restores_upload_preview_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_restore_preview_api_v1_restores_upload_preview_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Upload Restore Preview Api V1 Restores Upload Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Restore Preview",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/api/v1/runtime": {
+      "get": {
+        "operationId": "runtime_api_v1_runtime_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Runtime Api V1 Runtime Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Runtime",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "operationId": "local_search_api_v1_search_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "maxLength": 120,
+              "minLength": 2,
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Local Search Api V1 Search Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Local Search",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/session": {
+      "get": {
+        "operationId": "create_browser_session_api_v1_session_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Create Browser Session Api V1 Session Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Browser Session",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "settings_api_v1_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Settings Api V1 Settings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Settings",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/sources": {
+      "get": {
+        "operationId": "list_sources_api_v1_sources_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Sources Api V1 Sources Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sources",
+        "tags": [
+          "evidence"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "system"
+        ]
+      }
+    }
+  }
+}

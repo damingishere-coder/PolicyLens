@@ -36,10 +36,13 @@
 # JavaScript / Electron
 node_modules/
 dist/
+build/
 release/
 out/
 .vite/
 coverage/
+test-results/
+playwright-report/
 *.tsbuildinfo
 
 # Python

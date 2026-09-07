@@ -2,7 +2,7 @@
 
 ## 建模原则
 
-产品定义、产品版本、家庭保单、证据和比较案例分开。事实不直接“写死”在 UI 字段里，而是通过可版本化的 `Fact` 记录引用证据。金额、比例、日期、司法辖区和币种不得只存展示字符串。
+产品定义、产品版本、家庭保单、证据和比较案例分开。事实不直接“写死”在 UI 字段里，而是通过可版本化的 `Fact` 记录引用证据。核验状态、值的产生方式和证据权威性是三个独立维度，禁止用一个枚举代替。金额、比例、日期、司法辖区和币种不得只存展示字符串。
 
 ## 主要实体
 
@@ -22,13 +22,39 @@
 
 发行主体、品牌、司法辖区、官方名称、监管标识和官方来源。品牌名与合同主体不能混用。
 
+### ResearchRun 与 DiscoveryLead
+
+`ResearchRun` 保存一次用户确认的固定公开研究范围、预览哈希、CLI 参数档案、状态、计数和失败码，不保存家庭 ID、家庭自由文本或完整 prompt。`DiscoveryLead` 区分官方候选与第三方线索；第三方线索不能直接创建已核验产品。
+
+### OfficialDomain 与 SourceRevision
+
+`OfficialDomain` 是代码预置并核验的精确 HTTPS 主机白名单。`SourceRevision` 记录规范 URL、获取时间、HTTP 元数据、字节数、内容哈希、前一修订和加密 vault 引用；同一 URL 内容变化时新增修订，不覆盖旧事实。
+
 ### Product 与 ProductVersion
 
 `Product` 表示长期身份；`ProductVersion` 表示某一条款/费率/计划版本，包含市场、险种、币种、销售状态、适用地区、投保条件、生效范围和来源时间。
 
+### RenewalTerms
+
+产品版本的续保条款值对象，包括续保模式、保证续保期间、最高续保年龄、是否重新核保、是否重新评估健康、续保等待期、连续投保条件、产品停售处理和终止条件。每个关键字段都能绑定证据锚点。
+
+`RenewalMode` 使用 `GUARANTEED_RENEWAL / CONDITIONAL_RENEWAL / NON_GUARANTEED_RENEWAL / NON_RENEWABLE / UNKNOWN`。保证续保只描述续保权利，不能推导为保费固定。
+
+### PremiumRate
+
+版本化费率记录，包括费率表版本、有效期、币种、缴费频率、金额以及定价维度。通用维度包括年龄、地区、医保状态、职业、计划档次、保额和免赔额；宠物险可增加种类、品种、年龄和健康条件。标准费率与家庭保单实际支付金额必须分开。
+
+### RateAdjustmentRule
+
+费率调整规则记录调整范围、触发条件、频率、通知期、上限/下限、生效时间和所需证据。调整范围使用 `INDIVIDUAL / COHORT / PORTFOLIO / REGULATORY / UNKNOWN`，用于区分个体变化、同类人群整体调整、产品组合调整和监管要求。
+
 ### Policy
 
 家庭实际持有记录，关联成员或宠物、产品版本、角色、期间、缴费、状态、是否团险/赠险和脱敏标识。产品信息更新不能静默改写历史保单。
+
+### PolicyPremiumRecord
+
+记录家庭保单实际应缴/实缴保费、缴费日期、币种、缴费频率和对应费率版本。它不等同于 `PremiumRate`，用于对比标准费率、续期通知和实际支付历史。
 
 ### Benefit 与 Limitation
 
@@ -40,7 +66,7 @@
 
 ### SourceDocument
 
-来源类型、发行方、标题、版本日期、获取日期、URL 或本地 vault 引用、SHA-256、语言、页数、处理状态和许可备注。
+来源类型、发行方、标题、版本日期、获取日期、URL 或本地 vault 引用、SHA-256、语言、页数、处理状态、获取渠道、`SourceAuthority` 和许可备注。用户上传只是获取渠道，不改变文件本身的权威性。
 
 ### EvidenceAnchor
 
@@ -48,7 +74,7 @@
 
 ### Fact
 
-字段路径、规范化值、原始值、单位、保证属性、证据状态、核验人/时间和替代关系。事实更新采用新增版本，不覆盖历史。
+字段路径、规范化值、原始值、单位、保证属性、`VerificationStatus`、`ValueOrigin`、核验人/时间和替代关系。事实更新采用新增版本，不覆盖历史。
 
 ### ComparisonCase
 
@@ -68,24 +94,31 @@
 Jurisdiction: CN_MAINLAND | HK
 LineOfBusiness: MEDICAL | ACCIDENT | CRITICAL_ILLNESS | ANNUITY |
                 LIFE_SAVINGS | PET | AUTO | COMMERCIAL | OTHER
-EvidenceStatus: UNVERIFIED | VERIFIED | CONFLICTING | STALE | ESTIMATED
+VerificationStatus: UNVERIFIED | VERIFIED | CONFLICTING | STALE | REJECTED
+ValueOrigin: MANUAL_ENTRY | STRUCTURED_IMPORT | RULE_EXTRACTION |
+             AI_EXTRACTION | DETERMINISTIC_CALCULATION | USER_ASSUMPTION
+SourceAuthority: CONTRACT_DOCUMENT | REGULATOR_PUBLICATION |
+                 INSURER_OFFICIAL_DISCLOSURE | INSURER_OFFICIAL_WEB |
+                 THIRD_PARTY_REFERENCE | UNATTRIBUTED
 GuaranteeType: CONTRACT_GUARANTEED | NON_GUARANTEED | UNKNOWN
 RecordStatus: DRAFT | ACTIVE | EXPIRED | WITHDRAWN | ARCHIVED
-SourceTier: CONTRACT | OFFICIAL_DISCLOSURE | OFFICIAL_WEB |
-            USER_SUPPLIED | THIRD_PARTY_LEAD | AI_OUTPUT
+AnalysisStatus: DRAFT | ACCEPTED_AS_NOTE | REJECTED
 ```
 
-AI 输出不是 `EvidenceStatus`，而是独立的 `AI_DRAFT` 工作流状态。只有人工核验并绑定非 AI 来源后，事实才可变为 `VERIFIED`。
+三个维度独立存储、互不推导。AI 输出不是证据来源；分析草稿使用 `AnalysisStatus`。AI 提取的候选值使用 `AI_EXTRACTION`，只有人工核验并绑定非 AI 证据后，`VerificationStatus` 才可变为 `VERIFIED`，但 `ValueOrigin` 保持不变。
+
+原 `ESTIMATED` 状态删除：用户假设使用 `USER_ASSUMPTION`，确定性计算使用 `DETERMINISTIC_CALCULATION`。来源过期只改变 `VerificationStatus`，不会降低或改写 `SourceAuthority`。
 
 ## 约束
 
 - 所有金额必须带 ISO 4217 币种。
 - 百分比存十进制值及计算口径。
 - `CONTRACT_GUARANTEED` 必须引用合同或正式利益演示中的保证栏。
-- `VERIFIED` 至少关联一个允许核验的来源和一个核验事件。
+- `VERIFIED` 至少关联一个非 AI 证据和一个人工核验事件。
 - 删除被引用来源时只允许软删除，并提示受影响事实。
 - 比较案例固定引用 `ProductVersion`，不跟随“最新版本”自动变化。
 - 内容哈希相同的来源可复用，但保留每次导入事件。
+- 续保条款、费率和费率调整规则都必须版本化并引用证据；任何层级都不得从“保证续保”推导“保费固定”。
 
 ## 迁移与审计
 

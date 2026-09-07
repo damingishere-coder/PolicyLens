@@ -1,0 +1,39 @@
+{
+  "name": "policylens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PolicyLens localhost 本地优先保险研究工具",
+  "packageManager": "pnpm@11.5.3",
+  "scripts": {
+    "dev": ".\\.venv\\Scripts\\python.exe scripts/serve.py --host 127.0.0.1 --port 8768",
+    "dev:web": "corepack pnpm --filter @policylens/web dev",
+    "lint": "corepack pnpm lint:ts && corepack pnpm lint:python",
+    "lint:ts": "eslint apps packages tests --max-warnings=0",
+    "lint:python": ".\\.venv\\Scripts\\python.exe -m ruff check services/research-api tests/python scripts",
+    "typecheck": "corepack pnpm -r typecheck",
+    "test": "corepack pnpm test:unit && corepack pnpm test:python",
+    "test:unit": "vitest run",
+    "test:python": ".\\.venv\\Scripts\\python.exe -m pytest services/research-api/tests tests/python",
+    "test:contract": ".\\.venv\\Scripts\\python.exe scripts/generate_contracts.py --check && vitest run tests/contract",
+    "test:web-smoke": "corepack pnpm build && playwright test --config tests/web-smoke/playwright.config.ts",
+    "licenses:check": ".\\.venv\\Scripts\\python.exe scripts/dependency_report.py",
+    "generate:contracts": ".\\.venv\\Scripts\\python.exe scripts/generate_contracts.py && openapi-typescript packages/contracts/openapi.json -o packages/contracts/src/generated.ts",
+    "build:web": "corepack pnpm --filter @policylens/web build",
+    "build": "corepack pnpm generate:contracts && corepack pnpm licenses:check && corepack pnpm build:web",
+    "privacy:scan": ".\\.venv\\Scripts\\python.exe scripts/privacy_scan.py"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.3.0",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "jsdom": "^26.1.0",
+    "openapi-typescript": "^7.9.1",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
+    "vitest": "^3.2.4"
+  }
+}

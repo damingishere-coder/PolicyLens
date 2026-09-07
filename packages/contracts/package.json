@@ -1,0 +1,14 @@
+{
+  "name": "@policylens/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./generated": "./src/generated.ts",
+    "./codex-schema": "./schemas/codex-analysis.schema.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

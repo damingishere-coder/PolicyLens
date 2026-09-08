@@ -144,6 +144,7 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await page.getByRole("button", { name: "确认并启动一次研究" }).click();
     await expect(page.getByRole("heading", { name: "SYNTHETIC Future Savings Plan" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "SYNTHETIC Retirement Plan" })).toBeVisible();
+    await expect(page.locator(".research-execution")).toContainText("网页检索活动 1 次");
     await expect(page.getByText("本次仅发现第三方线索", { exact: false })).toBeVisible();
     await page.getByLabel("加入待核验对比").nth(0).check();
     await page.getByLabel("加入待核验对比").nth(1).check();
@@ -232,7 +233,10 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
       const runs = await response.json() as Array<Record<string, unknown>>;
       const latest = runs[0] as Record<string, unknown> & { insurer_outcomes: Array<Record<string, unknown>> };
       await route.fulfill({ response, json: [{
-        ...latest, status: "FAILED", error_code: "CODEX_TIMEOUT", summary: {}, leads: [],
+        ...latest, status: "FAILED", error_code: "CODEX_TIMEOUT", summary: { execution: {
+          phase: "WEB_SEARCH", elapsed_seconds: 900, timeout_seconds: 900,
+          events_observed: 12, web_searches: 4, last_event_elapsed_seconds: 895
+        } }, leads: [],
         insurer_outcomes: latest.insurer_outcomes.map((item) => ({
           ...item, status: "FAILED", official_candidates: 0, waiting_review: 0,
           published: 0, rejected: 0, lead_only: 0, error_codes: ["CODEX_TIMEOUT"]
@@ -242,6 +246,7 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await page.getByRole("button", { name: "香港储蓄/年金" }).click();
     await expect(page.locator(".insurer-outcomes").getByText("执行失败", { exact: true })).toHaveCount(3);
     await expect(page.locator(".research-run")).toContainText("研究超时");
+    await expect(page.locator(".research-execution")).toContainText("已用 15 分 0 秒");
     await expect(page.locator(".insurer-outcomes")).not.toContainText("NO_RESULT_RETURNED");
     await page.screenshot({ path: testInfo.outputPath("policylens-research-failure.png"), fullPage: true });
   } finally {

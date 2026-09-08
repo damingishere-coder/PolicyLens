@@ -30,6 +30,9 @@ let prompt = "";
 process.stdin.setEncoding("utf8");
 for await (const chunk of process.stdin) prompt += chunk;
 if (prompt.includes("--model") || !prompt.includes("aia.com.hk") || !prompt.includes("THIRD_PARTY_LEAD")) process.exit(55);
+process.stdout.write(JSON.stringify({ type: "turn.started" }) + "\n");
+process.stdout.write(JSON.stringify({ type: "item.started", item: { id: "search_1", type: "web_search", query: "synthetic public research" } }) + "\n");
+process.stdout.write(JSON.stringify({ type: "item.completed", item: { id: "search_1", type: "web_search" } }) + "\n");
 
 function product(insurerId, displayName, sourceUrl) {
   const facts = [

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import json
 import socket
 import time
 import unicodedata
@@ -85,13 +86,18 @@ class OfficialSourceFetcher:
         *,
         client: httpx.Client | None = None,
         resolver: Callable[[str], list[str]] | None = None,
+        dns_client: httpx.Client | None = None,
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
+        self._resolved: dict[str, list[str]] = {}
+        self._dns_client = dns_client
         self.client = client or httpx.Client(
             follow_redirects=False,
             timeout=httpx.Timeout(20.0, connect=10.0),
             headers={"User-Agent": USER_AGENT, "Accept": "text/html,application/pdf;q=0.9"},
-            trust_env=True,
+            trust_env=False,
+            limits=httpx.Limits(max_keepalive_connections=0),
+            event_hooks={"request": [self._pin_request]},
         )
         self._owns_client = client is None
         self.resolver = resolver or self._resolve
@@ -99,14 +105,64 @@ class OfficialSourceFetcher:
         self._last_request: dict[str, float] = {}
         self._robots: dict[str, RobotFileParser] = {}
 
-    @staticmethod
-    def _resolve(host: str) -> list[str]:
+    def _resolve(self, host: str) -> list[str]:
         try:
-            return sorted(
+            addresses = sorted(
                 {item[4][0] for item in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)}
             )
         except OSError as exc:
             raise FetchError("官方域名 DNS 解析失败。", "DNS_FAILED") from exc
+        # TUN resolvers may return benchmark/ULA placeholders instead of routable IPs.
+        # Never allow those addresses through; obtain a public address over verified TLS.
+        fake_ranges = (
+            ipaddress.ip_network("198.18.0.0/15"),
+            ipaddress.ip_network("fdfe:dcba:9876::/48"),
+        )
+        if addresses and all(
+            any(ipaddress.ip_address(address) in network for network in fake_ranges)
+            for address in addresses
+        ):
+            if host not in {host for hosts in OFFICIAL_HOSTS.values() for host in hosts}:
+                raise FetchError("仅允许解析预置官方域名。", "DOMAIN_REJECTED")
+            owned = self._dns_client is None
+            client = self._dns_client or httpx.Client(
+                timeout=10, trust_env=False, follow_redirects=False
+            )
+            try:
+                with client.stream(
+                    "GET",
+                    "https://1.1.1.1/dns-query",
+                    params={"name": host, "type": "A"},
+                    headers={"Accept": "application/dns-json"},
+                ) as response:
+                    if response.status_code != 200:
+                        raise FetchError("安全 DNS 查询失败。", "DNS_FAILED")
+                    data = json.loads(self._read_response(response, 65_536))
+                if not isinstance(data, dict) or data.get("Status") != 0:
+                    raise FetchError("安全 DNS 没有返回可用地址。", "DNS_FAILED")
+                answers = data.get("Answer", [])
+                if not isinstance(answers, list) or any(
+                    not isinstance(item, dict) for item in answers
+                ):
+                    raise FetchError("安全 DNS 返回格式无效。", "DNS_FAILED")
+                addresses = [item["data"] for item in answers if item.get("type") == 1]
+            except (httpx.HTTPError, ValueError, KeyError, TypeError) as exc:
+                raise FetchError("安全 DNS 查询失败。", "DNS_FAILED") from exc
+            finally:
+                if owned:
+                    client.close()
+        return addresses
+
+    def _pin_request(self, request: httpx.Request) -> None:
+        host = request.url.host
+        addresses = self._resolved.get(host)
+        if request.url.scheme != "https" or not addresses:
+            raise FetchError("请求缺少已验证的官网地址。", "DNS_REJECTED")
+        # The actual socket uses the checked IP; Host, SNI and certificate verification
+        # continue to use the official domain. No second system DNS lookup is needed.
+        request.headers["Host"] = host
+        request.extensions["sni_hostname"] = host
+        request.url = request.url.copy_with(host=addresses[0])
 
     def canonicalize(self, url: str, insurer_id: str) -> str:
         try:
@@ -139,6 +195,7 @@ class OfficialSourceFetcher:
                 raise FetchError("DNS 返回了无效地址。", "DNS_REJECTED") from exc
             if not ip.is_global:
                 raise FetchError("DNS 指向非公网地址，已拒绝访问。", "SSRF_REJECTED")
+        self._resolved[host] = addresses
         path = parsed.path or "/"
         return urlunsplit(("https", host, path, parsed.query, ""))
 
@@ -178,7 +235,10 @@ class OfficialSourceFetcher:
                     request = self.client.build_request(
                         "GET",
                         current,
-                        headers={"User-Agent": USER_AGENT, "Accept": "text/html,application/pdf;q=0.9"},
+                        headers={
+                            "User-Agent": USER_AGENT,
+                            "Accept": "text/html,application/pdf;q=0.9",
+                        },
                     )
                     response = self.client.send(request, stream=True)
                 except httpx.TimeoutException as exc:

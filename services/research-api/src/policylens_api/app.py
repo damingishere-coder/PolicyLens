@@ -42,6 +42,7 @@ from .ingestion import MAX_PDF_BYTES, ImportValidationError
 from .migrations import SCHEMA_VERSION
 from .public_research import PublicResearchService
 from .research_codex_runner import ResearchCodexError, ResearchCodexRunner
+from .research_progress import RESEARCH_TIMEOUT_SECONDS
 from .service import PolicyLensService, ServiceError
 from .web_fetcher import FetchedSource, OfficialSourceFetcher
 
@@ -153,7 +154,7 @@ def create_app(
     if research_runner is None:
         research_command = "codex"
         research_prefix_args: list[str] = []
-        research_timeout = 240.0
+        research_timeout = RESEARCH_TIMEOUT_SECONDS
         if os.environ.get("POLICYLENS_TEST_MODE") == "1":
             research_command = os.environ.get(
                 "POLICYLENS_FAKE_RESEARCH_CODEX_COMMAND", research_command
@@ -183,7 +184,10 @@ def create_app(
             if public_research.get_run(run_id)["cancel_requested"]:
                 public_research.fail_run(run_id, "USER_CANCELLED", cancelled=True)
                 return
-            executed = research_runner.run()
+            executed = research_runner.run(
+                on_progress=lambda progress: public_research.record_execution(run_id, progress),
+                is_cancelled=lambda: bool(public_research.get_run(run_id)["cancel_requested"]),
+            )
             public_research.apply_discovery(
                 run_id,
                 executed["result"],

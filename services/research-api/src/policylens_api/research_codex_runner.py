@@ -6,13 +6,17 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import time
+from collections.abc import Callable
+from contextlib import suppress
 from pathlib import Path
 
 from pydantic import ValidationError
 
 from .domain import ResearchDiscoveryOutput
+from .research_progress import RESEARCH_TIMEOUT_SECONDS, ResearchEventTracker, ResearchProgress
 
-ARGUMENT_PROFILE = "LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V2"
+ARGUMENT_PROFILE = "LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V3"
 
 
 class ResearchCodexError(RuntimeError):
@@ -83,7 +87,7 @@ class ResearchCodexRunner:
         *,
         command: str = "codex",
         prefix_args: list[str] | None = None,
-        timeout_seconds: float = 240.0,
+        timeout_seconds: float = RESEARCH_TIMEOUT_SECONDS,
     ) -> None:
         self.data_dir = data_dir
         self.command = command
@@ -92,6 +96,7 @@ class ResearchCodexRunner:
         self._run_lock = threading.Lock()
         self._state_lock = threading.Lock()
         self._current: subprocess.Popen[bytes] | None = None
+        self._cancel_requested = threading.Event()
 
     def _command_path(self) -> str:
         resolved = shutil.which(self.command)
@@ -121,12 +126,20 @@ class ResearchCodexRunner:
             )
         return completed.stdout.decode("utf-8", errors="replace").strip()[:120]
 
-    def run(self) -> dict[str, object]:
+    def run(
+        self,
+        *,
+        on_progress: Callable[[ResearchProgress], None] | None = None,
+        is_cancelled: Callable[[], bool] | None = None,
+    ) -> dict[str, object]:
         if not self._run_lock.acquire(blocking=False):
             raise ResearchCodexError("已有公开资料研究正在运行。")
+        self._cancel_requested.clear()
         temporary: Path | None = None
         try:
             cli_version = self.check_version()
+            if self._cancel_requested.is_set() or (is_cancelled and is_cancelled()):
+                raise ResearchCodexError("公开资料研究已取消。", code="USER_CANCELLED")
             root = self.data_dir / "temp"
             root.mkdir(parents=True, exist_ok=True)
             temporary = Path(tempfile.mkdtemp(prefix="public-research-", dir=root))
@@ -145,6 +158,7 @@ class ResearchCodexRunner:
                     "允许的官方主域名只有 aia.com.hk、prudential.com.hk、manulife.com.hk。可以从全网搜索发现线索，但 products 中只允许填写上述官方域名的 HTTPS 页面或 PDF。",
                     "第三方结果只能进入 leads，channel 必须是 THIRD_PARTY_LEAD，不得作为事实证据。",
                     "每个产品最多选择一个最完整的官方主来源；每个事实必须附上该来源中逐字可核对的短摘录，找不到就不要猜测该产品。",
+                    "证据摘录必须包含至少12个可见字符。币种、年龄、版本等短值要引用所在的完整句子或完整表格行；禁止用空字符、零宽字符或其他填充补足长度。缺少完整证据时仅返回来源线索，不伪造产品字段。",
                     "产品必需事实字段：product.display_name、product.version_label、product.jurisdiction=HK、product.line_of_business=ANNUITY 或 LIFE_SAVINGS、product.currency（三字母主币种）、product.insurer_id、product.sale_status。",
                     "可选事实字段：product.payment_term、product.issue_age、product.benefit_term、product.available_currencies、product.participating_type、product.guarantee_summary、product.non_guaranteed_summary、product.withdrawal_options、product.policy_loan、product.currency_switch、product.policy_split、product.change_of_insured、product.change_of_owner、risk.surrender、risk.exchange_rate、risk.non_guaranteed、fulfillment_ratio.disclosure。",
                     "insurer_id 只能为 aia-hk、prudential-hk、manulife-hk。不要输出个人建议、产品排名、购买动作、登录页面或联系信息。严格按 output schema 返回 JSON。",
@@ -180,13 +194,49 @@ class ResearchCodexRunner:
                 )
                 with self._state_lock:
                     self._current = process
+                started = time.monotonic()
+                tracker = ResearchEventTracker()
+                next_report = 0.0
+                input_data = prompt.encode("utf-8")
                 try:
-                    process.communicate(prompt.encode("utf-8"), timeout=self.timeout_seconds)
-                except subprocess.TimeoutExpired as exc:
+                    while True:
+                        if self._cancel_requested.is_set():
+                            raise ResearchCodexError("公开资料研究已取消。", code="USER_CANCELLED")
+                        elapsed = time.monotonic() - started
+                        if (
+                            stdout_path.stat().st_size > 4_000_000
+                            or stderr_path.stat().st_size > 512_000
+                        ):
+                            raise ResearchCodexError(
+                                "Codex 诊断输出超过安全上限，研究结果已拒绝。",
+                                code="CODEX_OUTPUT_TOO_LARGE",
+                            )
+                        tracker.read(stdout_path, int(elapsed))
+                        finished = process.poll() is not None
+                        timed_out = elapsed >= self.timeout_seconds and not finished
+                        if on_progress and (elapsed >= next_report or finished or timed_out):
+                            on_progress(
+                                tracker.snapshot(
+                                    elapsed=int(elapsed),
+                                    timeout=max(1, int(self.timeout_seconds)),
+                                    version=cli_version,
+                                    profile=ARGUMENT_PROFILE,
+                                )
+                            )
+                            next_report = elapsed + 5
+                        if finished:
+                            break
+                        if timed_out:
+                            raise ResearchCodexError(
+                                "公开资料研究达到总时限，未创建待核验产品。", code="CODEX_TIMEOUT"
+                            )
+                        with suppress(subprocess.TimeoutExpired):
+                            process.communicate(
+                                input_data, timeout=min(1.0, self.timeout_seconds - elapsed)
+                            )
+                        input_data = None
+                finally:
                     self._terminate(process)
-                    raise ResearchCodexError(
-                        "公开资料研究超时，未创建待核验产品。", code="CODEX_TIMEOUT"
-                    ) from exc
             if stdout_path.stat().st_size > 4_000_000 or stderr_path.stat().st_size > 512_000:
                 raise ResearchCodexError(
                     "Codex 诊断输出超过安全上限，研究结果已拒绝。", code="CODEX_OUTPUT_TOO_LARGE"
@@ -224,10 +274,13 @@ class ResearchCodexRunner:
             self._run_lock.release()
 
     def cancel(self) -> bool:
+        if not self._run_lock.locked():
+            return False
+        self._cancel_requested.set()
         with self._state_lock:
             process = self._current
         if process is None or process.poll() is not None:
-            return False
+            return True
         self._terminate(process)
         return True
 
@@ -247,9 +300,11 @@ class ResearchCodexRunner:
                 shell=False,
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )
+            process.wait(timeout=5)
         else:
             process.terminate()
             try:
                 process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 process.kill()
+                process.wait(timeout=5)

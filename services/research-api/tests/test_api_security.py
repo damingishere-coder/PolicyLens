@@ -10,10 +10,11 @@ from policylens_api.app import create_app
 from policylens_api.crypto import AesTestProtector
 from policylens_api.domain import ResearchDiscoveryOutput
 from policylens_api.research_codex_runner import ResearchCodexError
+from policylens_api.research_progress import ResearchProgress
 
 
 class EmptyResearchRunner:
-    def run(self) -> dict[str, object]:
+    def run(self, *, on_progress=None, is_cancelled=None) -> dict[str, object]:
         return {
             "result": ResearchDiscoveryOutput(schema_version="1.0", products=[], leads=[]),
             "cli_version": "codex-cli synthetic",
@@ -31,7 +32,19 @@ class NoopSourceFetcher:
 
 def test_research_api_preserves_safe_cli_failure_code(tmp_path: Path) -> None:
     class FailingRunner(EmptyResearchRunner):
-        def run(self):
+        def run(self, *, on_progress=None, is_cancelled=None):
+            on_progress(
+                ResearchProgress(
+                    phase="WEB_SEARCH",
+                    elapsed_seconds=900,
+                    timeout_seconds=900,
+                    events_observed=8,
+                    web_searches=3,
+                    last_event_elapsed_seconds=895,
+                    cli_version="codex-cli synthetic",
+                    argument_profile="synthetic-progress",
+                )
+            )
             raise ResearchCodexError("synthetic-private-diagnostic", code="CODEX_TIMEOUT")
 
     token = "synthetic-failure-token"
@@ -61,6 +74,10 @@ def test_research_api_preserves_safe_cli_failure_code(tmp_path: Path) -> None:
         run = response.json()
         assert run["status"] == "FAILED"
         assert run["error_code"] == "CODEX_TIMEOUT"
+        assert run["summary"]["execution"]["web_searches"] == 3
+        assert run["summary"]["execution"]["elapsed_seconds"] == 900
+        assert run["cli_version"] == "codex-cli synthetic"
+        assert run["argument_profile"] == "synthetic-progress"
         assert all(item["error_codes"] == ["CODEX_TIMEOUT"] for item in run["insurer_outcomes"])
         assert "synthetic-private-diagnostic" not in response.text
 

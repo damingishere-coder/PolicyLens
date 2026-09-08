@@ -13,6 +13,8 @@ from policylens_api.domain import (
     ResearchStartRequest,
 )
 from policylens_api.public_research import PublicResearchService
+from policylens_api.research_codex_runner import ARGUMENT_PROFILE
+from policylens_api.research_progress import RESEARCH_TIMEOUT_SECONDS, ResearchProgress
 from policylens_api.web_fetcher import FetchedSource
 
 
@@ -45,6 +47,43 @@ def test_finished_empty_discovery_still_has_no_result_outcomes(service) -> None:
     run = research.get_run(run_id)
     assert all(item["status"] == "NO_RESULT" for item in run["insurer_outcomes"])
     assert all(item["error_codes"] == ["NO_RESULT_RETURNED"] for item in run["insurer_outcomes"])
+
+
+def test_progress_survives_discovery_and_official_links_are_not_empty_results(service) -> None:
+    research = PublicResearchService(service)
+    preview = research.preview()
+    assert preview["timeout_seconds"] == RESEARCH_TIMEOUT_SECONDS == 900
+    assert preview["argument_profile"] == ARGUMENT_PROFILE
+    run_id = create_run(research)
+    progress = ResearchProgress(
+        phase="RESPONSE_READY",
+        elapsed_seconds=300,
+        timeout_seconds=900,
+        events_observed=5,
+        web_searches=2,
+        last_event_elapsed_seconds=300,
+        cli_version="codex-cli synthetic",
+        argument_profile=ARGUMENT_PROFILE,
+    )
+    research.record_execution(run_id, progress)
+    output = discovery_output(include_product=False)
+    output.leads[0].channel = "OFFICIAL_SEARCH"
+    output.leads[0].url = "https://www.aia.com.hk/synthetic-plan"
+    result = research.apply_discovery(
+        run_id,
+        output,
+        SyntheticFetcher(),
+        cli_version=progress.cli_version,
+        argument_profile=ARGUMENT_PROFILE,
+    )
+    assert result["summary"]["execution"] == progress.model_dump(mode="json")
+    insurer = result["insurer_outcomes"][0]
+    assert insurer["status"] == "LEAD_ONLY"
+    assert insurer["official_candidates"] == 0
+    assert insurer["official_leads"] == 1
+    assert insurer["error_codes"] == ["OFFICIAL_LEAD_UNVERIFIED"]
+    research.record_execution(run_id, progress.model_copy(update={"elapsed_seconds": 400}))
+    assert research.get_run(run_id)["summary"]["execution"]["elapsed_seconds"] == 300
 
 
 def discovery_output(

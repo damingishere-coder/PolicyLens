@@ -64,6 +64,7 @@ codex exec `
 
 ```powershell
 codex --search exec `
+  --skip-git-repo-check `
   --ephemeral `
   --json `
   --sandbox read-only `
@@ -73,6 +74,12 @@ codex --search exec `
 ```
 
 研究 prompt 只包含固定公开主题、三家公司名称和预置域名，不包含家庭对象、本地文件内容或私人路径。第三方搜索结果只能作为线索；结构化产品候选仍需由本地抓取器重新取得官方原文并逐字匹配证据。
+
+两个 runner 都在一次性非 Git 目录中运行，因此必须携带 `--skip-git-repo-check`，同时继续使用 `--sandbox read-only`。缺少该参数时，CLI 会在研究开始前报 `Not inside a trusted directory and --skip-git-repo-check was not specified.`。
+
+公开研究使用 `LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V2` 参数类别。发送给 CLI 的 Schema 递归声明所有属性为 required，未知可选值使用 null，并禁止额外属性；返回后仍执行本地 Pydantic 和证据校验。参见 [OpenAI 非交互模式](https://learn.chatgpt.com/docs/non-interactive-mode) 和 [结构化输出要求](https://developers.openai.com/api/docs/guides/structured-outputs)。
+
+公开研究失败只保存预定义错误码（例如 `CODEX_TIMEOUT`、`CODEX_INVALID_SCHEMA`、`CODEX_RATE_LIMIT`），不保存原始 stderr、JSONL、认证或私人诊断内容。失败、取消和中断不能显示为搜索零结果；只有搜索已完成且该公司没有返回线索时才使用 `NO_RESULT_RETURNED`。旧 `CODEX_FAILED` 记录无法还原具体原因，页面说明这一限制，不改写历史记录或自动重跑。
 
 ## 输出 Schema
 

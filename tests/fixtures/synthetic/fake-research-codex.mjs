@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
 if (args.includes("--version")) {
@@ -9,10 +9,20 @@ if (args.includes("--version")) {
 for (const forbidden of ["--model", "--oss", "--local-provider", "--add-dir", "--dangerously-bypass-approvals-and-sandbox"]) {
   if (args.includes(forbidden)) process.exit(51);
 }
-for (const required of ["--search", "exec", "--ephemeral", "--json", "--sandbox", "read-only", "--output-schema", "--output-last-message", "--cd", "-"]) {
+for (const required of ["--search", "exec", "--skip-git-repo-check", "--ephemeral", "--json", "--sandbox", "read-only", "--output-schema", "--output-last-message", "--cd", "-"]) {
   if (!args.includes(required)) process.exit(52);
 }
 if (args.indexOf("--search") > args.indexOf("exec")) process.exit(53);
+const schema = JSON.parse(readFileSync(args[args.indexOf("--output-schema") + 1], "utf8"));
+function checkStrict(node) {
+  if (!node || typeof node !== "object") return;
+  if (node.type === "object" && (node.additionalProperties !== false || Object.keys(node.properties).some((key) => !node.required?.includes(key)))) {
+    process.stderr.write("Invalid schema: all properties must be required\n");
+    process.exit(56);
+  }
+  for (const value of Object.values(node)) checkStrict(value);
+}
+checkStrict(schema);
 const outputIndex = args.indexOf("--output-last-message") + 1;
 if (outputIndex <= 0 || !args[outputIndex]) process.exit(54);
 

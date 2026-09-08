@@ -191,11 +191,11 @@ def create_app(
                 cli_version=str(executed["cli_version"]),
                 argument_profile=str(executed["argument_profile"]),
             )
-        except ResearchCodexError:
+        except ResearchCodexError as exc:
             cancelled = public_research.get_run(run_id)["cancel_requested"]
             public_research.fail_run(
                 run_id,
-                "USER_CANCELLED" if cancelled else "CODEX_FAILED",
+                "USER_CANCELLED" if cancelled else exc.code,
                 cancelled=bool(cancelled),
             )
         except Exception:

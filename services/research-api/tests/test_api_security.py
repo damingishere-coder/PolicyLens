@@ -9,6 +9,7 @@ from test_public_research import SyntheticFetcher, create_run, discovery_output
 from policylens_api.app import create_app
 from policylens_api.crypto import AesTestProtector
 from policylens_api.domain import ResearchDiscoveryOutput
+from policylens_api.research_codex_runner import ResearchCodexError
 
 
 class EmptyResearchRunner:
@@ -26,6 +27,42 @@ class EmptyResearchRunner:
 class NoopSourceFetcher:
     def close(self) -> None:
         return None
+
+
+def test_research_api_preserves_safe_cli_failure_code(tmp_path: Path) -> None:
+    class FailingRunner(EmptyResearchRunner):
+        def run(self):
+            raise ResearchCodexError("synthetic-private-diagnostic", code="CODEX_TIMEOUT")
+
+    token = "synthetic-failure-token"
+    app = create_app(
+        tmp_path / "failure-data",
+        token,
+        protector=AesTestProtector(b"F" * 32),
+        testing=True,
+        research_runner=FailingRunner(),
+        source_fetcher=NoopSourceFetcher(),
+    )
+    headers = {"X-PolicyLens-Token": token}
+    with TestClient(app) as client:
+        preview = client.post("/api/v1/research/preview", headers=headers).json()
+        response = client.post(
+            "/api/v1/research/runs",
+            headers=headers,
+            json={"confirmed": True, "preview_hash": preview["preview_hash"]},
+        )
+        assert response.status_code == 200
+        run_id = response.json()["id"]
+        for _ in range(100):
+            response = client.get(f"/api/v1/research/runs/{run_id}", headers=headers)
+            if response.json()["status"] == "FAILED":
+                break
+            time.sleep(0.01)
+        run = response.json()
+        assert run["status"] == "FAILED"
+        assert run["error_code"] == "CODEX_TIMEOUT"
+        assert all(item["error_codes"] == ["CODEX_TIMEOUT"] for item in run["insurer_outcomes"])
+        assert "synthetic-private-diagnostic" not in response.text
 
 
 def test_loopback_token_origin_and_extra_fields_are_rejected(tmp_path: Path) -> None:
@@ -219,7 +256,9 @@ def test_candidate_workbench_routes_are_authenticated_strict_and_official_only(
         assert response.status_code == 200
         candidates = response.json()
         assert len(candidates) == 2
-        assert all(item["source"]["authority"].startswith("INSURER_OFFICIAL") for item in candidates)
+        assert all(
+            item["source"]["authority"].startswith("INSURER_OFFICIAL") for item in candidates
+        )
         detail = client.get(
             f"/api/v1/research/candidates/{candidates[0]['import_id']}", headers=headers
         )

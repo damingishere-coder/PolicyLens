@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 from urllib.parse import urlsplit
 
+import pytest
 from conftest import accept_all
 
 from policylens_api.domain import (
@@ -13,6 +14,37 @@ from policylens_api.domain import (
 )
 from policylens_api.public_research import PublicResearchService
 from policylens_api.web_fetcher import FetchedSource
+
+
+@pytest.mark.parametrize(
+    ("status", "code"),
+    [
+        ("FAILED", "CODEX_FAILED"),
+        ("FAILED", "CODEX_TIMEOUT"),
+        ("CANCELLED", "USER_CANCELLED"),
+        ("INTERRUPTED", "PROCESS_INTERRUPTED"),
+    ],
+)
+def test_execution_failures_are_not_reported_as_empty_search(service, status, code) -> None:
+    research = PublicResearchService(service)
+    run_id = create_run(research)
+    if status == "INTERRUPTED":
+        research = PublicResearchService(service)
+    else:
+        research.fail_run(run_id, code, cancelled=status == "CANCELLED")
+    run = research.get_run(run_id)
+    assert run["status"] == status
+    assert all(item["status"] == status for item in run["insurer_outcomes"])
+    assert all(item["error_codes"] == [code] for item in run["insurer_outcomes"])
+
+
+def test_finished_empty_discovery_still_has_no_result_outcomes(service) -> None:
+    research = PublicResearchService(service)
+    run_id = create_run(research)
+    research.fail_run(run_id, "NO_VERIFIED_OFFICIAL_SOURCE")
+    run = research.get_run(run_id)
+    assert all(item["status"] == "NO_RESULT" for item in run["insurer_outcomes"])
+    assert all(item["error_codes"] == ["NO_RESULT_RETURNED"] for item in run["insurer_outcomes"])
 
 
 def discovery_output(

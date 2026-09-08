@@ -9,7 +9,7 @@ if (args.includes("--version")) {
 for (const forbidden of ["--model", "--oss", "--local-provider", "--add-dir", "--dangerously-bypass-approvals-and-sandbox"]) {
   if (args.includes(forbidden)) process.exit(41);
 }
-for (const required of ["exec", "--ephemeral", "--json", "--sandbox", "read-only", "--output-schema", "--cd", "-"]) {
+for (const required of ["exec", "--skip-git-repo-check", "--ephemeral", "--json", "--sandbox", "read-only", "--output-schema", "--cd", "-"]) {
   if (!args.includes(required)) process.exit(42);
 }
 const outputIndex = args.indexOf("--output-last-message") + 1;

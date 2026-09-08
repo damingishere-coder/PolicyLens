@@ -89,6 +89,7 @@ class CodexRunner:
                 self._command_path(),
                 *self.prefix_args,
                 "exec",
+                "--skip-git-repo-check",
                 "--ephemeral",
                 "--json",
                 "--sandbox",

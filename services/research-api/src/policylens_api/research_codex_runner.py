@@ -12,11 +12,66 @@ from pydantic import ValidationError
 
 from .domain import ResearchDiscoveryOutput
 
-ARGUMENT_PROFILE = "LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V1"
+ARGUMENT_PROFILE = "LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V2"
 
 
 class ResearchCodexError(RuntimeError):
     code = "RESEARCH_CODEX_FAILED"
+
+    def __init__(self, message: str, *, code: str = "CODEX_FAILED") -> None:
+        super().__init__(message)
+        self.code = code
+
+
+def discovery_output_schema() -> dict:
+    """Require every output key; nullable fields still accept unknown values."""
+    schema = ResearchDiscoveryOutput.model_json_schema()
+
+    def strict(node):
+        if isinstance(node, dict):
+            node.pop("default", None)
+            if node.get("type") == "object":
+                node["required"] = list(node.get("properties", {}))
+                node["additionalProperties"] = False
+            for value in node.values():
+                strict(value)
+        elif isinstance(node, list):
+            for value in node:
+                strict(value)
+
+    strict(schema)
+    return schema
+
+
+def failure_code(stdout: str, stderr: str) -> str:
+    """Classify only diagnostic events; never persist provider text or credentials."""
+    messages = [stderr.lower()]
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(event, dict) and event.get("type") in {"error", "turn.failed"}:
+            messages.append(json.dumps(event).lower())
+    diagnostic = "\n".join(messages)
+    for code, markers in (
+        ("CODEX_UNTRUSTED_DIRECTORY", ("not inside a trusted directory",)),
+        ("CODEX_INVALID_SCHEMA", ("invalid_json_schema", "invalid schema")),
+        ("CODEX_AUTH_REQUIRED", ("not logged in", "authentication", "401 unauthorized")),
+        ("CODEX_RATE_LIMIT", ("usage limit", "rate limit", "rate_limit", "quota exceeded")),
+        (
+            "CODEX_NETWORK_FAILED",
+            (
+                "error sending request",
+                "connection refused",
+                "connection reset",
+                "failed to connect",
+            ),
+        ),
+    ):
+        if any(marker in diagnostic for marker in markers):
+            return code
+    return "CODEX_FAILED"
 
 
 class ResearchCodexRunner:
@@ -41,7 +96,9 @@ class ResearchCodexRunner:
     def _command_path(self) -> str:
         resolved = shutil.which(self.command)
         if resolved is None:
-            raise ResearchCodexError("未找到可用的 Codex CLI；研究没有启动。")
+            raise ResearchCodexError(
+                "未找到可用的 Codex CLI；研究没有启动。", code="CODEX_NOT_FOUND"
+            )
         return resolved
 
     def check_version(self) -> str:
@@ -55,9 +112,13 @@ class ResearchCodexRunner:
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
-            raise ResearchCodexError("Codex CLI 兼容性检查失败；研究没有启动。") from exc
+            raise ResearchCodexError(
+                "Codex CLI 兼容性检查失败；研究没有启动。", code="CODEX_START_FAILED"
+            ) from exc
         if completed.returncode != 0:
-            raise ResearchCodexError("Codex CLI 兼容性检查失败；研究没有启动。")
+            raise ResearchCodexError(
+                "Codex CLI 兼容性检查失败；研究没有启动。", code="CODEX_START_FAILED"
+            )
         return completed.stdout.decode("utf-8", errors="replace").strip()[:120]
 
     def run(self) -> dict[str, object]:
@@ -74,7 +135,7 @@ class ResearchCodexRunner:
             stdout_path = temporary / "stdout.log"
             stderr_path = temporary / "stderr.log"
             schema_path.write_text(
-                json.dumps(ResearchDiscoveryOutput.model_json_schema(), ensure_ascii=False),
+                json.dumps(discovery_output_schema(), ensure_ascii=False),
                 encoding="utf-8",
             )
             prompt = "\n".join(
@@ -94,6 +155,7 @@ class ResearchCodexRunner:
                 *self.prefix_args,
                 "--search",
                 "exec",
+                "--skip-git-repo-check",
                 "--ephemeral",
                 "--json",
                 "--sandbox",
@@ -122,24 +184,38 @@ class ResearchCodexRunner:
                     process.communicate(prompt.encode("utf-8"), timeout=self.timeout_seconds)
                 except subprocess.TimeoutExpired as exc:
                     self._terminate(process)
-                    raise ResearchCodexError("公开资料研究超时，未创建待核验产品。") from exc
+                    raise ResearchCodexError(
+                        "公开资料研究超时，未创建待核验产品。", code="CODEX_TIMEOUT"
+                    ) from exc
             if stdout_path.stat().st_size > 4_000_000 or stderr_path.stat().st_size > 512_000:
-                raise ResearchCodexError("Codex 诊断输出超过安全上限，研究结果已拒绝。")
+                raise ResearchCodexError(
+                    "Codex 诊断输出超过安全上限，研究结果已拒绝。", code="CODEX_OUTPUT_TOO_LARGE"
+                )
             if process.returncode != 0:
                 raise ResearchCodexError(
-                    f"公开资料研究失败（退出代码 {process.returncode}），未创建待核验产品。"
+                    f"公开资料研究失败（退出代码 {process.returncode}），未创建待核验产品。",
+                    code=failure_code(
+                        stdout_path.read_text(encoding="utf-8", errors="replace"),
+                        stderr_path.read_text(encoding="utf-8", errors="replace"),
+                    ),
                 )
             try:
                 result = ResearchDiscoveryOutput.model_validate_json(
                     result_path.read_text(encoding="utf-8")
                 )
             except (OSError, ValidationError, ValueError) as exc:
-                raise ResearchCodexError("公开资料研究输出未通过结构化校验。") from exc
+                raise ResearchCodexError(
+                    "公开资料研究输出未通过结构化校验。", code="CODEX_INVALID_OUTPUT"
+                ) from exc
             return {
                 "result": result,
                 "cli_version": cli_version,
                 "argument_profile": ARGUMENT_PROFILE,
             }
+        except OSError as exc:
+            raise ResearchCodexError(
+                "无法启动研究进程或读写临时文件。", code="CODEX_START_FAILED"
+            ) from exc
         finally:
             with self._state_lock:
                 self._current = None

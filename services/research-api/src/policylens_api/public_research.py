@@ -256,8 +256,13 @@ class PublicResearchService:
         }
 
     @staticmethod
-    def _insurer_outcomes(leads, run_status: str) -> list[dict[str, Any]]:
+    def _insurer_outcomes(
+        leads, run_status: str, error_code: str | None = None
+    ) -> list[dict[str, Any]]:
         outcomes = []
+        unsuccessful = run_status in {"FAILED", "CANCELLED", "INTERRUPTED"} and (
+            error_code != "NO_VERIFIED_OFFICIAL_SOURCE"
+        )
         terminal = run_status not in {
             ResearchRunStatus.QUEUED.value,
             ResearchRunStatus.DISCOVERING.value,
@@ -271,7 +276,9 @@ class PublicResearchService:
             published = sum(item.status.startswith("PUBLISHED_") for item in official)
             rejected = sum(bool(item.rejection_code) for item in official)
             errors = sorted({item.rejection_code for item in matched if item.rejection_code})
-            if terminal and not official:
+            if unsuccessful:
+                errors = sorted({*errors, error_code or f"RESEARCH_{run_status}"})
+            elif terminal and not official:
                 errors = sorted(
                     set(
                         [*errors, "NO_OFFICIAL_CANDIDATE" if third_party else "NO_RESULT_RETURNED"]
@@ -285,6 +292,8 @@ class PublicResearchService:
                 status = "REJECTED"
             elif third_party:
                 status = "LEAD_ONLY"
+            elif unsuccessful:
+                status = run_status
             elif terminal:
                 status = "NO_RESULT"
             else:
@@ -330,7 +339,7 @@ class PublicResearchService:
             "started_at": row.started_at,
             "finished_at": row.finished_at,
             "leads": [self._lead_view(item) for item in leads],
-            "insurer_outcomes": self._insurer_outcomes(leads, row.status),
+            "insurer_outcomes": self._insurer_outcomes(leads, row.status, row.error_code),
         }
 
     def list_runs(self, limit: int = 10) -> list[dict[str, Any]]:

@@ -9,5 +9,5 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   outputDir: "../../test-results/web-smoke",
-  use: { channel: "chrome", trace: "retain-on-failure", screenshot: "only-on-failure" }
+  use: { channel: "chrome", actionTimeout: 15_000, trace: "retain-on-failure", screenshot: "only-on-failure" }
 });

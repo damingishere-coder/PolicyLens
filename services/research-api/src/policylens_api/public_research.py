@@ -35,6 +35,8 @@ from .models import (
     source_documents,
     source_revisions,
 )
+from .research_codex_runner import ARGUMENT_PROFILE
+from .research_progress import RESEARCH_TIMEOUT_SECONDS, ResearchProgress
 from .service import ConflictError, NotFoundError, PolicyLensService
 from .web_fetcher import FetchedSource, FetchError, OfficialSourceFetcher, evidence_matches
 
@@ -120,7 +122,7 @@ class PublicResearchService:
     def __init__(self, core: PolicyLensService) -> None:
         self.core = core
         self._ensure_catalog()
-        self._mark_interrupted_runs()
+        self.recover_interrupted_runs()
 
     def _ensure_catalog(self) -> None:
         now = _now()
@@ -164,7 +166,7 @@ class PublicResearchService:
                             )
                         )
 
-    def _mark_interrupted_runs(self) -> None:
+    def recover_interrupted_runs(self) -> None:
         active = {
             ResearchRunStatus.QUEUED.value,
             ResearchRunStatus.DISCOVERING.value,
@@ -197,8 +199,9 @@ class PublicResearchService:
             "query_summary": "香港储蓄保险与年金产品；全网发现线索，官方来源逐条验证",
             "will_send": ["固定公开研究主题", "三家公司名称", "预置官方域名"],
             "will_not_send": ["家庭成员资料", "保单资料", "本地文件内容", "本地路径"],
-            "usage_notice": "启动后会使用当前 Codex CLI 账号执行一次实时网页搜索，消耗相应使用额度。",
-            "argument_profile": "LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V1",
+            "usage_notice": "启动后使用当前 Codex CLI 账号研究三家公司公开资料，消耗相应使用额度。Codex 阶段最多等待 15 分钟，随后抓取官方原文核验。页面显示已用时间和搜索活动，可以取消；失败不会自动重试。",
+            "timeout_seconds": int(RESEARCH_TIMEOUT_SECONDS),
+            "argument_profile": ARGUMENT_PROFILE,
             "requires_confirmation": True,
         }
         preview["preview_hash"] = _hash_json(preview)
@@ -271,6 +274,8 @@ class PublicResearchService:
         for insurer in INSURER_SEEDS:
             matched = [item for item in leads if item.insurer_id == insurer["id"]]
             official = [item for item in matched if item.discovery_channel == "OFFICIAL_SEARCH"]
+            official_links = [item for item in official if item.status == "LEAD_ONLY"]
+            official = [item for item in official if item.status != "LEAD_ONLY"]
             third_party = [item for item in matched if item.discovery_channel == "THIRD_PARTY_LEAD"]
             waiting = sum(item.status == "WAITING_REVIEW" for item in official)
             published = sum(item.status.startswith("PUBLISHED_") for item in official)
@@ -278,11 +283,11 @@ class PublicResearchService:
             errors = sorted({item.rejection_code for item in matched if item.rejection_code})
             if unsuccessful:
                 errors = sorted({*errors, error_code or f"RESEARCH_{run_status}"})
+            elif terminal and not official and official_links:
+                errors = sorted({*errors, "OFFICIAL_LEAD_UNVERIFIED"})
             elif terminal and not official:
                 errors = sorted(
-                    set(
-                        [*errors, "NO_OFFICIAL_CANDIDATE" if third_party else "NO_RESULT_RETURNED"]
-                    )
+                    set([*errors, "NO_OFFICIAL_CANDIDATE" if third_party else "NO_RESULT_RETURNED"])
                 )
             if waiting:
                 status = "WAITING_REVIEW"
@@ -290,10 +295,10 @@ class PublicResearchService:
                 status = "PUBLISHED"
             elif rejected:
                 status = "REJECTED"
-            elif third_party:
-                status = "LEAD_ONLY"
             elif unsuccessful:
                 status = run_status
+            elif third_party or official_links:
+                status = "LEAD_ONLY"
             elif terminal:
                 status = "NO_RESULT"
             else:
@@ -304,6 +309,7 @@ class PublicResearchService:
                     "brand_name": insurer["brand_name"],
                     "status": status,
                     "official_candidates": len(official),
+                    "official_leads": len(official_links),
                     "waiting_review": waiting,
                     "published": published,
                     "rejected": rejected,
@@ -371,6 +377,25 @@ class PublicResearchService:
                 .values(cancel_requested=True)
             )
             return str(row.id)
+
+    def record_execution(self, run_id: str, progress: ResearchProgress) -> None:
+        with self.core.db.research.begin() as connection:
+            row = connection.execute(
+                select(research_runs).where(research_runs.c.id == run_id)
+            ).first()
+            if not row or row.status not in {"QUEUED", "DISCOVERING", "FETCHING"}:
+                return
+            summary = json.loads(row.summary_json)
+            summary["execution"] = progress.model_dump(mode="json")
+            connection.execute(
+                update(research_runs)
+                .where(research_runs.c.id == run_id)
+                .values(
+                    summary_json=json.dumps(summary, separators=(",", ":")),
+                    cli_version=progress.cli_version,
+                    argument_profile=progress.argument_profile,
+                )
+            )
 
     def fail_run(self, run_id: str, error_code: str, *, cancelled: bool = False) -> None:
         with self.core.db.research.begin() as connection:
@@ -659,6 +684,9 @@ class PublicResearchService:
             if rejection_code is None:
                 try:
                     fetched = fetcher.fetch(product.source_url, product.insurer_id)
+                    if self.get_run(run_id)["cancel_requested"]:
+                        self.fail_run(run_id, "USER_CANCELLED", cancelled=True)
+                        return self.get_run(run_id)
                     expected_pdf = product.document_type == "OFFICIAL_PDF"
                     if expected_pdf != fetched.content.startswith(b"%PDF-"):
                         rejection_code = "DOCUMENT_TYPE_MISMATCH"
@@ -708,6 +736,12 @@ class PublicResearchService:
             "lead_only": len(output.leads),
         }
         with self.core.db.research.begin() as connection:
+            previous = connection.execute(
+                select(research_runs.c.summary_json).where(research_runs.c.id == run_id)
+            ).scalar_one()
+            execution = json.loads(previous).get("execution")
+            if execution is not None:
+                summary["execution"] = execution
             connection.execute(
                 update(research_runs)
                 .where(research_runs.c.id == run_id)
@@ -747,7 +781,9 @@ class PublicResearchService:
                 {
                     "id": "research_database",
                     "ready": database_ready,
-                    "message": "研究数据库完整且迁移已就绪" if database_ready else "研究数据库完整性检查失败",
+                    "message": "研究数据库完整且迁移已就绪"
+                    if database_ready
+                    else "研究数据库完整性检查失败",
                 }
             )
         except Exception:
@@ -772,7 +808,9 @@ class PublicResearchService:
             {
                 "id": "codex_cli",
                 "ready": cli_ready,
-                "message": "Codex CLI 可用" if cli_ready else "未找到 Codex CLI，暂时不能启动联网研究",
+                "message": "Codex CLI 可用"
+                if cli_ready
+                else "未找到 Codex CLI，暂时不能启动联网研究",
             }
         )
         active = next(
@@ -792,7 +830,9 @@ class PublicResearchService:
             {
                 "id": "research_slot",
                 "ready": active is None,
-                "message": "可以启动一次新研究" if active is None else f"研究 {active['id']} 正在运行",
+                "message": "可以启动一次新研究"
+                if active is None
+                else f"研究 {active['id']} 正在运行",
             }
         )
         return {

@@ -81,11 +81,13 @@ async function createManualProduct(page: Page): Promise<void> {
   await page.getByLabel("产品名称").fill("SYNTHETIC Browser Beta");
   await page.getByLabel("版本", { exact: true }).fill("Synthetic Browser B 2026");
   await page.getByLabel("标准年费率").fill("1560.00");
+  await page.getByLabel("证据摘录（最多 600 字）").fill("SYNTHETIC browser evidence only.");
   await page.getByRole("button", { name: "生成待核验字段" }).click();
   await acceptCurrentImport(page);
 }
 
 test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
   const projectRoot = path.resolve(__dirname, "../..");
   const dataDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "policylens-web-smoke-"));
   const port = await unusedPort();
@@ -119,7 +121,7 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     expect(navigation?.status()).toBe(200);
     expect(navigation?.headers()["content-security-policy"]).toContain("default-src 'self'");
     await expect(page.getByTestId("app-shell")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "香港保险公开研究台" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "把家人的保障，放在心上。" })).toBeVisible();
 
     const browserIsolation = await page.evaluate(() => ({
       process: typeof (window as unknown as { process?: unknown }).process,
@@ -128,7 +130,7 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     }));
     expect(browserIsolation).toEqual({ process: "undefined", require: "undefined", policyLens: "undefined" });
 
-    await page.getByRole("button", { name: "香港储蓄/年金" }).click();
+    await page.goto(`${url}/research`);
     await expect(page.getByRole("heading", { name: "香港储蓄/年金主动研究" })).toBeVisible();
     await page.getByRole("button", { name: "查看联网研究预览" }).click();
     await expect(page.getByRole("heading", { name: "本次联网研究预览" })).toBeVisible();
@@ -144,6 +146,7 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await page.getByRole("button", { name: "确认并启动一次研究" }).click();
     await expect(page.getByRole("heading", { name: "SYNTHETIC Future Savings Plan" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "SYNTHETIC Retirement Plan" })).toBeVisible();
+    await expect(page.locator(".research-execution")).toContainText("网页检索活动 1 次");
     await expect(page.getByText("本次仅发现第三方线索", { exact: false })).toBeVisible();
     await page.getByLabel("加入待核验对比").nth(0).check();
     await page.getByLabel("加入待核验对比").nth(1).check();
@@ -152,12 +155,11 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await expect(page.getByText("不是正式结论", { exact: true })).toBeVisible();
     await page.locator(".candidate-card").first().getByRole("button", { name: "逐项人工核验" }).click();
     await acceptCurrentImport(page);
-    await page.getByRole("button", { name: "香港储蓄/年金" }).click();
+    await page.goto(`${url}/research`);
     await expect(page.getByRole("button", { name: "查看正式产品" }).first()).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("policylens-candidate-workbench.png"), fullPage: true });
 
-    await page.getByRole("button", { name: "规划中" }).click();
-    await page.getByRole("button", { name: "打开工具" }).click();
+    await page.goto(`${url}/imports`);
     const pdfChooser = page.waitForEvent("filechooser");
     await page.getByRole("button", { name: "选择文本 PDF" }).click();
     await (await pdfChooser).setFiles(path.join(projectRoot, "tests", "fixtures", "synthetic", "synthetic-care-alpha.pdf"));
@@ -166,12 +168,22 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await expect(page.getByRole("heading", { name: "字段级证据" })).toBeVisible();
     await expect(page.getByText("RULE_EXTRACTION", { exact: false }).first()).toBeVisible();
 
-    await page.getByRole("button", { name: "规划中" }).click();
-    await page.getByRole("button", { name: "打开工具" }).click();
+    await page.goto(`${url}/imports`);
     await createManualProduct(page);
-    await page.getByRole("button", { name: "证据对比" }).click();
-    await page.locator(".product-picker button").nth(0).click();
-    await page.locator(".product-picker button").nth(1).click();
+    await page.goto(`${url}/compare`);
+    await page.getByLabel("这次比较的目的").fill("SYNTHETIC 查看续保与费用差异");
+    await page.locator(".comparison-choice input").nth(0).check();
+    await page.locator(".comparison-choice input").nth(1).check();
+    await page.getByRole("button",{name:"保存条件并查看差异"}).click();
+    await expect(page.getByRole("heading",{name:"主要条款与差异",exact:true})).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("heading",{name:"SYNTHETIC 查看续保与费用差异"})).toBeVisible();
+    await expect(page.getByText("比较年龄尚未明确",{exact:true})).toBeVisible();
+    await page.goto(`${url}/compare`);
+    await page.getByText("直接使用完整证据比较工具", {exact:true}).click();
+    const evidenceTool = page.locator("details.card").filter({has:page.getByText("直接使用完整证据比较工具",{exact:true})});
+    await evidenceTool.locator(".product-picker button").nth(0).click();
+    await evidenceTool.locator(".product-picker button").nth(1).click();
     await page.getByRole("button", { name: "生成证据对比" }).click();
     await expect(page.getByText("保证续保不表示保费固定", { exact: false })).toBeVisible();
     await page.getByRole("button", { name: "生成外发预览" }).click();
@@ -183,15 +195,13 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
     await page.getByRole("button", { name: "仅接受为笔记" }).click();
     await expect(page.getByText("ACCEPTED_AS_NOTE", { exact: true })).toBeVisible();
 
-    await page.getByRole("button", { name: "家庭保单" }).click();
-    await page.getByRole("button", { name: "新增保单" }).click();
-    await page.getByLabel("家庭成员昵称").fill("SYNTHETIC 成员甲");
-    await page.getByLabel("已核验产品").selectOption({ index: 1 });
-    await page.getByRole("button", { name: "保存本地保单" }).click();
-    await page.getByRole("button", { name: "查看保单" }).click();
-    await expect(page.getByRole("heading", { name: "PolicyPremiumRecord 实际缴费" })).toBeVisible();
-
-    await page.getByRole("button", { name: "设置" }).click();
+    await page.goto(`${url}/policies/new`);
+    await page.getByLabel("保险名称", {exact:true}).fill("SYNTHETIC family draft");
+    await page.getByRole("button", {name:"保存这份保单"}).click();
+    await expect(page.getByRole("heading", {name:"SYNTHETIC family draft"})).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("heading", {name:"缴费与续保"})).toBeVisible();
+    await page.goto(`${url}/settings`);
     await expect(page.getByText("浏览器本地模式", { exact: true })).toBeVisible();
     const password = "SYNTHETIC-browser-backup-2026";
     await page.getByLabel("恢复密码（至少 12 字符）").fill(password);
@@ -232,16 +242,20 @@ test("首次可用闭环可在 localhost 浏览器中完成", async ({ page }, t
       const runs = await response.json() as Array<Record<string, unknown>>;
       const latest = runs[0] as Record<string, unknown> & { insurer_outcomes: Array<Record<string, unknown>> };
       await route.fulfill({ response, json: [{
-        ...latest, status: "FAILED", error_code: "CODEX_TIMEOUT", summary: {}, leads: [],
+        ...latest, status: "FAILED", error_code: "CODEX_TIMEOUT", summary: { execution: {
+          phase: "WEB_SEARCH", elapsed_seconds: 900, timeout_seconds: 900,
+          events_observed: 12, web_searches: 4, last_event_elapsed_seconds: 895
+        } }, leads: [],
         insurer_outcomes: latest.insurer_outcomes.map((item) => ({
           ...item, status: "FAILED", official_candidates: 0, waiting_review: 0,
           published: 0, rejected: 0, lead_only: 0, error_codes: ["CODEX_TIMEOUT"]
         }))
       }] });
     });
-    await page.getByRole("button", { name: "香港储蓄/年金" }).click();
+    await page.goto(`${url}/research`);
     await expect(page.locator(".insurer-outcomes").getByText("执行失败", { exact: true })).toHaveCount(3);
     await expect(page.locator(".research-run")).toContainText("研究超时");
+    await expect(page.locator(".research-execution")).toContainText("已用 15 分 0 秒");
     await expect(page.locator(".insurer-outcomes")).not.toContainText("NO_RESULT_RETURNED");
     await page.screenshot({ path: testInfo.outputPath("policylens-research-failure.png"), fullPage: true });
   } finally {

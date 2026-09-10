@@ -71,7 +71,7 @@ def test_alembic_migrates_separate_research_and_family_databases(
         },
         "family.db": {"persons", "policies", "policy_premium_records", "ai_analysis_runs"},
     }
-    expected_revision = {"research.db": "research_0002", "family.db": "family_0001"}
+    expected_revision = {"research.db": "research_0002", "family.db": "family_0002"}
     for name, required in expected.items():
         path = service.data_dir / "databases" / name
         assert path.exists()

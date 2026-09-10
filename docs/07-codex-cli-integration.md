@@ -77,9 +77,15 @@ codex --search exec `
 
 两个 runner 都在一次性非 Git 目录中运行，因此必须携带 `--skip-git-repo-check`，同时继续使用 `--sandbox read-only`。缺少该参数时，CLI 会在研究开始前报 `Not inside a trusted directory and --skip-git-repo-check was not specified.`。
 
-公开研究使用 `LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V2` 参数类别。发送给 CLI 的 Schema 递归声明所有属性为 required，未知可选值使用 null，并禁止额外属性；返回后仍执行本地 Pydantic 和证据校验。参见 [OpenAI 非交互模式](https://learn.chatgpt.com/docs/non-interactive-mode) 和 [结构化输出要求](https://developers.openai.com/api/docs/guides/structured-outputs)。
+公开研究使用 `LIVE_SEARCH_EPHEMERAL_JSON_READ_ONLY_SCHEMA_V3` 参数类别，预览与实际 runner 共用常量。发送给 CLI 的 Schema 递归声明所有属性为 required，未知可选值使用 null，并禁止额外属性；返回后仍执行本地 Pydantic 和证据校验。参见 [OpenAI 非交互模式](https://learn.chatgpt.com/docs/non-interactive-mode) 和 [结构化输出要求](https://developers.openai.com/api/docs/guides/structured-outputs)。
 
 公开研究失败只保存预定义错误码（例如 `CODEX_TIMEOUT`、`CODEX_INVALID_SCHEMA`、`CODEX_RATE_LIMIT`），不保存原始 stderr、JSONL、认证或私人诊断内容。失败、取消和中断不能显示为搜索零结果；只有搜索已完成且该公司没有返回线索时才使用 `NO_RESULT_RETURNED`。旧 `CODEX_FAILED` 记录无法还原具体原因，页面说明这一限制，不改写历史记录或自动重跑。
+
+Codex 阶段总时限为 900 秒（15 分钟），随后进入独立的官方来源抓取与核验阶段。每 5 秒持久化一次安全进度：阶段枚举、已用秒数、总时限、事件计数、网页活动计数及最近活动时间。CLI 版本和参数类别在进程开始时写入，不必等成功后才有诊断信息。输出大小在运行中检查，超时或取消后终止并回收进程，再清除原始临时输出；不按“暂时没有新事件”判断卡死，也不自动重试。
+
+官方抓取兼容本机 TUN fake-IP：仅当预置官网全部解析到 `198.18.0.0/15` 或 `fdfe:dcba:9876::/48` 时，向固定 HTTPS DNS 服务 `https://1.1.1.1/dns-query` 查询该官网的 A 记录（只传域名，不传路径和家庭数据）。返回 IP 仍须是公网地址。默认抓取客户端实际连接已验证 IP，同时保留官方 Host、TLS SNI 和证书验证，禁用环境 HTTP 代理；每次重定向继续校验域名和地址。其他私网解析、私有 DNS 返回、跨域重定向和证书错误继续拒绝。参见 [Cloudflare DNS JSON](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/make-api-requests/dns-json/) 和 [HTTPCore SNI 扩展](https://www.encode.io/httpcore/extensions/)。
+
+只有官方链接但没有可核验字段的结果显示为“待核验线索”，单列官方线索数量。证据摘录必须是至少 12 个可见字符的完整上下文；短值不得用不可见字符填充。不能逐字匹配的产品继续拒绝，联网返回资料不等于已经产生可信候选。
 
 ## 输出 Schema
 

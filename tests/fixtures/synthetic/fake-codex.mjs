@@ -19,8 +19,8 @@ let prompt = "";
 process.stdin.setEncoding("utf8");
 for await (const chunk of process.stdin) prompt += chunk;
 const payload = JSON.parse(prompt.slice(prompt.lastIndexOf("\n\n") + 2));
-const evidenceIds = payload.comparison.evidenceExcerpts.map((item) => item.evidenceId);
-const invalid = payload.comparison.products.some((item) => item.displayName === "RETURN_INVALID_REF");
+const evidenceIds = (payload.comparison?.evidenceExcerpts ?? payload.evidence_excerpts ?? []).map((item) => item.evidenceId);
+const invalid = (payload.comparison?.products ?? [payload.product].filter(Boolean)).some((item) => item.displayName === "RETURN_INVALID_REF");
 const result = {
   summary: "这是由假 Codex 进程生成的纯合成结构化草稿。",
   differences: [{
@@ -31,7 +31,7 @@ const result = {
   unknowns: ["未来调费幅度未知。"],
   risks: ["保证续保不表示保费固定。"],
   questions_for_human_review: ["请核验调费通知期。"],
-  calculation_refs: []
+  calculation_refs: payload.calculation ? [payload.calculation.reference] : []
 };
 writeFileSync(args[outputIndex], JSON.stringify(result), "utf8");
 process.stdout.write(JSON.stringify({ type: "turn.completed", synthetic: true }) + "\n");

@@ -4,7 +4,8 @@ import hashlib
 import json
 import os
 import secrets
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -806,6 +807,7 @@ class PolicyLensService:
     def _evidence_view(self, item: dict[str, Any]) -> dict[str, Any]:
         return {
             "id": item["id"],
+            "source_id": item["source_id"],
             "page_number": item["page_number"],
             "excerpt": self.cipher.decrypt_text(item["excerpt_encrypted"]),
             "excerpt_hash": item["excerpt_hash"],
@@ -885,7 +887,7 @@ class PolicyLensService:
         with self.db.family.connect() as connection:
             base = connection.execute(
                 select(policies, persons.c.nickname_encrypted)
-                .join(persons, policies.c.person_id == persons.c.id)
+                .outerjoin(persons, policies.c.person_id == persons.c.id)
                 .where(policies.c.id == policy_id)
             ).first()
             if not base:
@@ -896,10 +898,10 @@ class PolicyLensService:
                 )
             ).all()
         data = _row(base)
-        product = self.get_product(data["product_version_id"])
+        product = self.get_product(data["product_version_id"]) if data["product_version_id"] else None
         return {
             "id": data["id"],
-            "member_nickname": self.cipher.decrypt_text(data["nickname_encrypted"]),
+            "member_nickname": self.cipher.decrypt_text(data["nickname_encrypted"]) if data["nickname_encrypted"] else None,
             "category": data["category"],
             "status": data["status"],
             "product": product,
@@ -926,12 +928,15 @@ class PolicyLensService:
         policies_view = self.list_policies()
         products_view = self.list_products()
         imports_view = self.list_imports()
-        annual_total = sum(
-            float(record["paid_amount"] or record["due_amount"])
+        annual_total = sum((
+            Decimal(record["paid_amount"])
             for policy in policies_view
             for record in policy["premium_records"]
-            if record["currency"] == "CNY" and record["frequency"] == "ANNUAL"
-        )
+            if record["currency"] == "CNY" and record["paid_amount"] is not None
+            and record["paid_date"] and record["paid_date"].startswith(f"{date.today().year}-")
+        ), Decimal(0))
+        with self.db.family.connect() as connection:
+            member_count = connection.execute(select(func.count()).select_from(persons)).scalar_one()
         pending = sum(
             1
             for item in imports_view
@@ -939,7 +944,7 @@ class PolicyLensService:
             if candidate["verification_status"] in {"UNVERIFIED", "CONFLICTING", "STALE"}
         )
         return {
-            "members": len({item["member_nickname"] for item in policies_view}),
+            "members": member_count,
             "active_policies": sum(item["status"] == "ACTIVE" for item in policies_view),
             "annual_premium_cny": f"{annual_total:.2f}",
             "pending_verification": pending,
@@ -1145,6 +1150,11 @@ class PolicyLensService:
             )
         return self.get_analysis(analysis_id)
 
+    def list_analyses(self) -> list[dict[str, Any]]:
+        with self.db.family.connect() as connection:
+            identifiers = connection.execute(select(ai_analysis_runs.c.id).order_by(ai_analysis_runs.c.created_at.desc())).scalars().all()
+        return [self.get_analysis(identifier) for identifier in identifiers]
+
     def get_analysis(self, analysis_id: str) -> dict[str, Any]:
         with self.db.family.connect() as connection:
             row_value = connection.execute(
@@ -1190,16 +1200,46 @@ class PolicyLensService:
 
     def commit_restore(self, token: str) -> dict[str, object]:
         self.db.dispose()
+        candidate_db = None
+        candidate_cipher = None
+        candidate_dek = None
+
+        def validate_switch(expected_dek: bytes):
+            nonlocal candidate_db, candidate_cipher, candidate_dek
+            try:
+                candidate_dek = self.key_manager.load_or_create()
+                if candidate_dek != expected_dek:
+                    raise ServiceError("恢复密钥与已验证备份不一致")
+                candidate_cipher = EnvelopeCipher(candidate_dek)
+                candidate_db = DatabaseManager(self.data_dir)
+                # Verify actual key/data compatibility before dropping rollback directories.
+                for engine, metadata in [(candidate_db.family, persons.metadata), (candidate_db.research, products.metadata)]:
+                    with engine.connect() as connection:
+                        for table in metadata.sorted_tables:
+                            encrypted = [column for column in table.columns if column.name.endswith("_encrypted")]
+                            if not encrypted:
+                                continue
+                            for row in connection.execute(select(*encrypted)):
+                                for value in row:
+                                    if value is not None:
+                                        candidate_cipher.decrypt_text(value)
+            except Exception:
+                if candidate_db:
+                    candidate_db.dispose()
+                if candidate_cipher:
+                    candidate_cipher.clear()
+                raise
         try:
-            result = self.backups.commit_restore(token)
+            result = self.backups.commit_restore(token, validate_switch)
             self.cipher.clear()
-            self.dek = self.key_manager.load_or_create()
-            self.cipher = EnvelopeCipher(self.dek)
-            self.db = DatabaseManager(self.data_dir)
+            self.dek = candidate_dek
+            self.cipher = candidate_cipher
+            self.db = candidate_db
             self.backups = BackupManager(self.data_dir, self.key_manager, self.dek)
             return result
         except Exception:
-            self.db = DatabaseManager(self.data_dir)
+            # Existing engines use NullPool and still point at the restored original paths.
+            # Keep the original, uncleared key and cipher when post-switch validation fails.
             raise
 
     def settings(self) -> dict[str, Any]:

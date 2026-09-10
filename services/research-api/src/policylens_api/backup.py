@@ -10,6 +10,7 @@ import shutil
 import sqlite3
 import tempfile
 import zipfile
+from collections.abc import Callable
 from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -187,7 +188,7 @@ class BackupManager:
             raise RestoreValidationError("backup container is invalid") from exc
         if manifest.get("format_version") != FORMAT_VERSION:
             raise RestoreValidationError("backup format version is not supported")
-        if manifest.get("schema_version") not in {1, SCHEMA_VERSION}:
+        if manifest.get("schema_version") not in {1, 2, SCHEMA_VERSION}:
             raise RestoreValidationError("backup schema version is not supported")
         kdf = manifest.get("kdf", {})
         if kdf != {
@@ -277,7 +278,7 @@ class BackupManager:
 
         supported_revisions = {
             "research.db": {"research_0001", "research_0002"},
-            "family.db": {"family_0001"},
+            "family.db": {"family_0001", "family_0002"},
         }
         for name in ("research.db", "family.db"):
             db_path = destination / "databases" / name
@@ -314,7 +315,7 @@ class BackupManager:
 
     @staticmethod
     def _validate_current_revisions(data_dir: Path) -> None:
-        expected = {"research.db": "research_0002", "family.db": "family_0001"}
+        expected = {"research.db": "research_0002", "family.db": "family_0002"}
         for name, revision in expected.items():
             database = data_dir / "databases" / name
             with closing(sqlite3.connect(database)) as connection:
@@ -353,7 +354,7 @@ class BackupManager:
             archive.writestr("payload.enc", encrypted)
         return destination
 
-    def commit_restore(self, token: str) -> dict[str, object]:
+    def commit_restore(self, token: str, validate_switch: Callable[[bytes], None] | None = None) -> dict[str, object]:
         plan = self._plans.pop(token, None)
         if plan is None:
             raise RestoreValidationError("restore preview token is missing or expired")
@@ -361,6 +362,8 @@ class BackupManager:
         rollback = self.data_dir / "temp" / f"rollback-{secrets.token_hex(8)}"
         rollback.mkdir(parents=True)
         current_names = ("databases", "vault", "keys")
+        moved_names: list[str] = []
+        installed_names: list[str] = []
         try:
             staged_keys = plan.staging_dir / "keys"
             staged_keys.mkdir(parents=True, exist_ok=True)
@@ -380,16 +383,22 @@ class BackupManager:
                 current = self.data_dir / name
                 if current.exists():
                     os.replace(current, rollback / name)
+                    moved_names.append(name)
             for name in current_names:
                 staged = plan.staging_dir / name
                 if not staged.exists():
                     staged.mkdir(parents=True)
                 os.replace(staged, self.data_dir / name)
+                installed_names.append(name)
+            if validate_switch:
+                validate_switch(plan.dek)
         except Exception as exc:
-            for name in current_names:
+            for name in installed_names:
                 failed = self.data_dir / name
                 if failed.exists():
                     shutil.rmtree(failed) if failed.is_dir() else failed.unlink()
+            for name in reversed(moved_names):
+                failed = self.data_dir / name
                 previous = rollback / name
                 if previous.exists():
                     os.replace(previous, failed)

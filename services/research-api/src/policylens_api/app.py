@@ -19,6 +19,8 @@ from fastapi.staticfiles import StaticFiles
 
 from .backup import BackupError
 from .codex_runner import CodexRunner, CodexRunnerError
+from .context_analysis import ContextAnalysis
+from .context_domain import ExplanationPreviewRequest, ExplanationRunRequest, ExplanationView
 from .crypto import KeyProtector
 from .domain import (
     AnalysisStatusRequest,
@@ -38,11 +40,14 @@ from .domain import (
     ValueOrigin,
     VerificationStatus,
 )
+from .household import HouseholdService
+from .household_routes import household_router
 from .ingestion import MAX_PDF_BYTES, ImportValidationError
 from .migrations import SCHEMA_VERSION
 from .public_research import PublicResearchService
 from .research_codex_runner import ResearchCodexError, ResearchCodexRunner
 from .research_progress import RESEARCH_TIMEOUT_SECONDS
+from .runtime_gate import RuntimeGate
 from .service import PolicyLensService, ServiceError
 from .web_fetcher import FetchedSource, OfficialSourceFetcher
 
@@ -178,6 +183,7 @@ def create_app(
         )
     research_threads: set[threading.Thread] = set()
     research_threads_lock = threading.Lock()
+    runtime_gate = RuntimeGate()
 
     def execute_public_research(run_id: str) -> None:
         try:
@@ -208,6 +214,7 @@ def create_app(
             current = threading.current_thread()
             with research_threads_lock:
                 research_threads.discard(current)
+            runtime_gate.end_external()
 
     def signed_value(label: str, value: str) -> str:
         return hmac.new(
@@ -230,6 +237,7 @@ def create_app(
     async def lifespan(_app: FastAPI):
         yield
         codex_runner.cancel()
+        context_runner.cancel()
         research_runner.cancel()
         with research_threads_lock:
             active_threads = list(research_threads)
@@ -252,6 +260,40 @@ def create_app(
     app.state.codex_runner = codex_runner
     app.state.public_research = public_research
     app.state.research_runner = research_runner
+    app.state.household = HouseholdService(service)
+    app.include_router(household_router(app.state.household))
+    context_analysis = ContextAnalysis(app.state.household)
+    # Separate cancellation ownership from the preserved two-product analysis workflow.
+    context_runner = CodexRunner(data_dir,schema_source,
+        command=getattr(codex_runner,"command","codex"),
+        prefix_args=getattr(codex_runner,"prefix_args",[]),
+        timeout_seconds=getattr(codex_runner,"timeout_seconds",120.0))
+    app.state.context_runner = context_runner
+
+    @app.get("/api/v1/household/explanations",response_model=list[ExplanationView],tags=["household"])
+    def explanations():
+        return context_analysis.list()
+
+    @app.post("/api/v1/household/explanations/preview",response_model=ExplanationView,tags=["household"])
+    def explanation_preview(request: ExplanationPreviewRequest):
+        return context_analysis.preview(request)
+
+    @app.get("/api/v1/household/explanations/{identifier}",response_model=ExplanationView,tags=["household"])
+    def explanation(identifier: str):
+        return context_analysis.get(identifier)
+
+    @app.post("/api/v1/household/explanations/{identifier}/run",response_model=ExplanationView,tags=["household"])
+    def explanation_run(identifier: str, request: ExplanationRunRequest):
+        with runtime_gate.external():
+            return context_analysis.run(identifier,request,context_runner)
+
+    @app.post("/api/v1/household/explanations/{identifier}/cancel",response_model=ExplanationView,tags=["household"])
+    def explanation_cancel(identifier: str):
+        return context_analysis.cancel(identifier,context_runner)
+
+    @app.patch("/api/v1/household/explanations/{identifier}/status",response_model=ExplanationView,tags=["household"])
+    def explanation_status(identifier: str, request: AnalysisStatusRequest):
+        return context_analysis.accept(identifier,request.status)
 
     @app.middleware("http")
     async def local_security(request: Request, call_next):
@@ -306,7 +348,11 @@ def create_app(
             if token is None or not secrets.compare_digest(supplied, token):
                 event_log.write("request_rejected", "INVALID_LOCAL_TOKEN", request_id)
                 return JSONResponse(status_code=401, content={"code": "INVALID_LOCAL_TOKEN"})
-        response = await call_next(request)
+        try:
+            with runtime_gate.request(restoring=request.url.path == "/api/v1/restores/commit"):
+                response = await call_next(request)
+        except ServiceError as exc:
+            response = JSONResponse(status_code=409, content={"code": exc.code, "message": str(exc)})
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Cache-Control"] = "no-store"
         response.headers["Referrer-Policy"] = "no-referrer"
@@ -315,7 +361,7 @@ def create_app(
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self'; "
             "img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; "
-            "object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+            "frame-src blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
         )
         return response
 
@@ -428,16 +474,21 @@ def create_app(
 
     @app.post("/api/v1/research/runs", tags=["research"])
     def run_public_research(request: ResearchStartRequest) -> dict[str, object]:
-        run_id = public_research.create_run(request)
-        thread = threading.Thread(
-            target=execute_public_research,
-            args=(run_id,),
-            name=f"PolicyLensResearch-{run_id[-8:]}",
-            daemon=True,
-        )
-        with research_threads_lock:
-            research_threads.add(thread)
-        thread.start()
+        runtime_gate.begin_external()
+        try:
+            run_id = public_research.create_run(request)
+            thread = threading.Thread(
+                target=execute_public_research,
+                args=(run_id,),
+                name=f"PolicyLensResearch-{run_id[-8:]}",
+                daemon=True,
+            )
+            with research_threads_lock:
+                research_threads.add(thread)
+            thread.start()
+        except Exception:
+            runtime_gate.end_external()
+            raise
         return public_research.get_run(run_id)
 
     @app.post("/api/v1/research/runs/{run_id}/cancel", tags=["research"])
@@ -528,7 +579,8 @@ def create_app(
 
     @app.post("/api/v1/codex/run", tags=["codex"])
     def run_codex(request: CodexRunRequest) -> dict[str, object]:
-        return codex_runner.run(request.payload)
+        with runtime_gate.external():
+            return codex_runner.run(request.payload)
 
     @app.post("/api/v1/codex/cancel", tags=["codex"])
     def cancel_codex() -> dict[str, bool]:
@@ -541,6 +593,10 @@ def create_app(
     @app.get("/api/v1/analyses/{analysis_id}", tags=["codex"])
     def get_analysis(analysis_id: str) -> dict[str, object]:
         return service.get_analysis(analysis_id)
+
+    @app.get("/api/v1/analyses", tags=["codex"])
+    def list_analyses() -> list[dict[str, object]]:
+        return service.list_analyses()
 
     @app.patch("/api/v1/analyses/{analysis_id}/status", tags=["codex"])
     def update_analysis_status(
@@ -587,7 +643,10 @@ def create_app(
 
     @app.post("/api/v1/restores/commit", tags=["backup"])
     def commit_restore(request: RestoreCommitRequest) -> dict[str, object]:
-        return service.commit_restore(request.restore_token)
+        result = service.commit_restore(request.restore_token)
+        context_analysis.recover_interrupted()
+        public_research.recover_interrupted_runs()
+        return result
 
     @app.get("/api/v1/settings", tags=["system"])
     def settings() -> dict[str, object]:

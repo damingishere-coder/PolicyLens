@@ -34,7 +34,7 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        rebuilds_legacy_tables = database_kind == "research"
+        rebuilds_legacy_tables = database_kind in {"research", "family"}
         connection.exec_driver_sql(
             "PRAGMA foreign_keys=OFF" if rebuilds_legacy_tables else "PRAGMA foreign_keys=ON"
         )
@@ -51,7 +51,7 @@ def run_migrations_online() -> None:
                 violations = connection.exec_driver_sql("PRAGMA foreign_key_check").fetchall()
                 if violations:
                     raise RuntimeError(
-                        f"research migration produced {len(violations)} foreign-key violations"
+                        f"{database_kind} migration produced {len(violations)} foreign-key violations"
                     )
         finally:
             connection.exec_driver_sql("PRAGMA foreign_keys=ON")

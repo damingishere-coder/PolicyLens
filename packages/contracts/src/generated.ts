@@ -11,7 +11,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List Analyses */
+        get: operations["list_analyses_api_v1_analyses_get"];
         put?: never;
         /** Save Analysis */
         post: operations["save_analysis_api_v1_analyses_post"];
@@ -184,6 +185,492 @@ export interface paths {
         /** Dashboard */
         get: operations["dashboard_api_v1_dashboard_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/comparisons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Comparison List */
+        get: operations["comparison_list_api_v1_household_comparisons_get"];
+        put?: never;
+        /** Create Comparison */
+        post: operations["create_comparison_api_v1_household_comparisons_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/comparisons/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Comparison */
+        get: operations["comparison_api_v1_household_comparisons__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document List */
+        get: operations["document_list_api_v1_household_documents_get"];
+        put?: never;
+        /** Upload Document */
+        post: operations["upload_document_api_v1_household_documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/documents/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document */
+        get: operations["document_api_v1_household_documents__identifier__get"];
+        /** Update Document */
+        put: operations["update_document_api_v1_household_documents__identifier__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/documents/{identifier}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Content */
+        get: operations["document_content_api_v1_household_documents__identifier__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/documents/{identifier}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Original */
+        get: operations["original_api_v1_household_documents__identifier__original_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/explanations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Explanations */
+        get: operations["explanations_api_v1_household_explanations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/explanations/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explanation Preview */
+        post: operations["explanation_preview_api_v1_household_explanations_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/explanations/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Explanation */
+        get: operations["explanation_api_v1_household_explanations__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/explanations/{identifier}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explanation Cancel */
+        post: operations["explanation_cancel_api_v1_household_explanations__identifier__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/explanations/{identifier}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Explanation Run */
+        post: operations["explanation_run_api_v1_household_explanations__identifier__run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/explanations/{identifier}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Explanation Status */
+        patch: operations["explanation_status_api_v1_household_explanations__identifier__status_patch"];
+        trace?: never;
+    };
+    "/api/v1/household/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Members */
+        get: operations["members_api_v1_household_members_get"];
+        put?: never;
+        /** Create Member */
+        post: operations["create_member_api_v1_household_members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/members/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Member */
+        get: operations["member_api_v1_household_members__identifier__get"];
+        /** Update Member */
+        put: operations["update_member_api_v1_household_members__identifier__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Policies */
+        get: operations["policies_api_v1_household_policies_get"];
+        put?: never;
+        /** Create Policy */
+        post: operations["create_policy_api_v1_household_policies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/policies/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Policy */
+        get: operations["policy_api_v1_household_policies__identifier__get"];
+        /** Update Policy */
+        put: operations["update_policy_api_v1_household_policies__identifier__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/policies/{identifier}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["history_api_v1_household_policies__identifier__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/policies/{identifier}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Payment */
+        post: operations["create_payment_api_v1_household_policies__identifier__payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/policies/{identifier}/payments/{payment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Payment */
+        put: operations["update_payment_api_v1_household_policies__identifier__payments__payment_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/retirement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plans */
+        get: operations["plans_api_v1_household_retirement_get"];
+        put?: never;
+        /** Create Plan */
+        post: operations["create_plan_api_v1_household_retirement_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/retirement/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plan */
+        get: operations["plan_api_v1_household_retirement__identifier__get"];
+        /** Update Plan */
+        put: operations["update_plan_api_v1_household_retirement__identifier__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/retirement/{identifier}/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Snapshots */
+        get: operations["snapshots_api_v1_household_retirement__identifier__snapshots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/retirement/{identifier}/snapshots/{snapshot_id}/reproduce": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reproduce */
+        post: operations["reproduce_api_v1_household_retirement__identifier__snapshots__snapshot_id__reproduce_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/sources/{identifier}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Content */
+        get: operations["source_content_api_v1_household_sources__identifier__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/sources/{identifier}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Original */
+        get: operations["source_original_api_v1_household_sources__identifier__original_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Summary */
+        get: operations["summary_api_v1_household_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Task List */
+        get: operations["task_list_api_v1_household_tasks_get"];
+        put?: never;
+        /** Create Task */
+        post: operations["create_task_api_v1_household_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/household/tasks/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Task Action */
+        put: operations["task_action_api_v1_household_tasks__identifier__put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -675,6 +1162,13 @@ export interface components {
             /** File */
             file: string;
         };
+        /** Body_upload_document_api_v1_household_documents_post */
+        Body_upload_document_api_v1_household_documents_post: {
+            /** File */
+            file: string;
+            /** Policy Id */
+            policy_id?: string | null;
+        };
         /** Body_upload_restore_preview_api_v1_restores_upload_preview_post */
         Body_upload_restore_preview_api_v1_restores_upload_preview_post: {
             /** File */
@@ -792,10 +1286,244 @@ export interface components {
             confirmed: true;
             payload: components["schemas"]["CodexExternalPayload"];
         };
+        /** ComparisonCell */
+        ComparisonCell: {
+            /** Evidence Ids */
+            evidence_ids: string[];
+            /** Guarantee Type */
+            guarantee_type: string;
+            /** Product Version Id */
+            product_version_id: string;
+            /** Value */
+            value: string | null;
+            /** Verification Status */
+            verification_status: string;
+        };
+        /** ComparisonDifference */
+        ComparisonDifference: {
+            /** Cells */
+            cells: components["schemas"]["ComparisonCell"][];
+            /** Field */
+            field: string;
+            /** Label */
+            label: string;
+        };
+        /** CurrencyTotal */
+        CurrencyTotal: {
+            /** Currency */
+            currency: string;
+            /** Outstanding Registered */
+            outstanding_registered: string;
+            /** Paid This Year */
+            paid_this_year: string;
+        };
+        /** DocumentContent */
+        DocumentContent: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "PDF" | "TEXT";
+            /** Notice */
+            notice: string;
+            /** Pages */
+            pages: string[];
+            /** Title */
+            title: string;
+        };
+        /** DocumentUpdate */
+        DocumentUpdate: {
+            /** Expected Revision */
+            expected_revision: number;
+            /** Policy Id */
+            policy_id: string | null;
+            /** Title */
+            title: string;
+        };
+        /** DocumentView */
+        DocumentView: {
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Page Count */
+            page_count: number;
+            /** Policy Id */
+            policy_id: string | null;
+            /** Revision */
+            revision: number;
+            /** Sha256 */
+            sha256: string;
+            /** Text Available */
+            text_available: boolean;
+            /** Title */
+            title: string;
+        };
         /** EvidenceComparisonRequest */
         EvidenceComparisonRequest: {
             /** Product Version Ids */
             product_version_ids: string[];
+        };
+        /** ExplanationPayload */
+        ExplanationPayload: {
+            calculation?: components["schemas"]["ExternalCalculation"] | null;
+            /** Evidence Excerpts */
+            evidence_excerpts?: components["schemas"]["CodexExternalEvidence"][];
+            product?: components["schemas"]["CodexExternalProduct"] | null;
+            /**
+             * Schema Version
+             * @default context-v1
+             * @constant
+             */
+            schema_version: "context-v1";
+            /**
+             * Task
+             * @enum {string}
+             */
+            task: "EXPLAIN_POLICY" | "EXPLAIN_RETIREMENT";
+        };
+        /** ExplanationPreviewRequest */
+        ExplanationPreviewRequest: {
+            /** Evidence Ids */
+            evidence_ids?: string[] | null;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "POLICY" | "RETIREMENT";
+            /** Snapshot Id */
+            snapshot_id?: string | null;
+            /** Target Id */
+            target_id: string;
+        };
+        /** ExplanationRunRequest */
+        ExplanationRunRequest: {
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+            /** Preview Hash */
+            preview_hash: string;
+        };
+        /** ExplanationView */
+        ExplanationView: {
+            /** Created At */
+            created_at: string;
+            /** Error */
+            error?: string | null;
+            /** Id */
+            id: string;
+            payload: components["schemas"]["ExplanationPayload"];
+            /** Preview Hash */
+            preview_hash: string;
+            result?: components["schemas"]["CodexAnalysisResult"] | null;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "POLICY" | "RETIREMENT";
+            /** Snapshot Id */
+            snapshot_id: string | null;
+            /** Stale */
+            stale: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PREVIEW" | "RUNNING" | "DRAFT" | "ACCEPTED_AS_NOTE" | "REJECTED" | "FAILED" | "CANCELLED";
+            /** Target Id */
+            target_id: string;
+            /** Will Not Send */
+            will_not_send: string[];
+            /** Will Send */
+            will_send: string[];
+        };
+        /** ExternalCalculation */
+        ExternalCalculation: {
+            /**
+             * Algorithm
+             * @constant
+             */
+            algorithm: "retirement-monthly-gap-v1";
+            /** Assumptions */
+            assumptions: string[];
+            /** Currency */
+            currency: string;
+            /** Reference */
+            reference: string;
+            /** Scenarios */
+            scenarios: components["schemas"]["ExternalScenario"][];
+        };
+        /** ExternalScenario */
+        ExternalScenario: {
+            /** Monthly Expense */
+            monthly_expense: string;
+            /** Monthly Gap */
+            monthly_gap: string;
+            /** Monthly Income */
+            monthly_income: string;
+            /** Monthly Surplus */
+            monthly_surplus: string;
+            /** Name */
+            name: string;
+        };
+        /** FamilyComparisonInput */
+        FamilyComparisonInput: {
+            /** Age */
+            age?: number | null;
+            /** Annual Budget */
+            annual_budget?: string | null;
+            /**
+             * Benefit Term
+             * @default
+             */
+            benefit_term: string;
+            /** Currency */
+            currency?: string | null;
+            /** Jurisdiction */
+            jurisdiction?: ("CN_MAINLAND" | "HK") | null;
+            /**
+             * Payment Term
+             * @default
+             */
+            payment_term: string;
+            /** Person Id */
+            person_id?: string | null;
+            /** Product Version Ids */
+            product_version_ids: string[];
+            /** Purpose */
+            purpose: string;
+        };
+        /** FamilyComparisonView */
+        FamilyComparisonView: {
+            /**
+             * Algorithm Version
+             * @default family-comparison-v1
+             * @constant
+             */
+            algorithm_version: "family-comparison-v1";
+            /** Blockers */
+            blockers: string[];
+            /** Created At */
+            created_at: string;
+            /** Differences */
+            differences: components["schemas"]["ComparisonDifference"][];
+            /** Evidence Complete */
+            evidence_complete: boolean;
+            /** Id */
+            id: string;
+            /** Input Hash */
+            input_hash: string;
+            inputs: components["schemas"]["FamilyComparisonInput"];
+            /** Product Names */
+            product_names: string[];
+            /** Questions */
+            questions: string[];
+            /** Stale */
+            stale: boolean;
         };
         /**
          * GuaranteeType
@@ -806,6 +1534,28 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HouseholdSummary */
+        HouseholdSummary: {
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Disclaimer */
+            disclaimer: string;
+            /** Members */
+            members: components["schemas"]["MemberView"][];
+            /** Policies */
+            policies: components["schemas"]["PolicyView"][];
+            /** Policies Without Payments */
+            policies_without_payments: number;
+            /** Tasks */
+            tasks: components["schemas"]["TaskView"][];
+            /** Totals */
+            totals: components["schemas"]["CurrencyTotal"][];
+            /** Year */
+            year: number;
         };
         /** ImportReviewRequest */
         ImportReviewRequest: {
@@ -848,6 +1598,157 @@ export interface components {
              */
             version_label: string;
         };
+        /** MemberInput */
+        MemberInput: {
+            /** Age */
+            age?: number | null;
+            /** Age As Of */
+            age_as_of?: string | null;
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
+            /** Nickname */
+            nickname: string;
+            /**
+             * Relationship
+             * @default OTHER
+             * @enum {string}
+             */
+            relationship: "SELF" | "PARENT" | "PARTNER" | "CHILD" | "OTHER";
+        };
+        /** MemberUpdate */
+        MemberUpdate: {
+            /** Age */
+            age?: number | null;
+            /** Age As Of */
+            age_as_of?: string | null;
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
+            /** Expected Revision */
+            expected_revision: number;
+            /** Nickname */
+            nickname: string;
+            /**
+             * Relationship
+             * @default OTHER
+             * @enum {string}
+             */
+            relationship: "SELF" | "PARENT" | "PARTNER" | "CHILD" | "OTHER";
+        };
+        /** MemberView */
+        MemberView: {
+            /** Age */
+            age?: number | null;
+            /** Age As Of */
+            age_as_of?: string | null;
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
+            /** Id */
+            id: string;
+            /** Nickname */
+            nickname: string;
+            /** Policy Count */
+            policy_count: number;
+            /** Possible Duplicate Ids */
+            possible_duplicate_ids: string[];
+            /**
+             * Relationship
+             * @default OTHER
+             * @enum {string}
+             */
+            relationship: "SELF" | "PARENT" | "PARTNER" | "CHILD" | "OTHER";
+            /** Revision */
+            revision: number;
+        };
+        /** PaymentInput */
+        PaymentInput: {
+            /**
+             * Currency
+             * @default CNY
+             */
+            currency: string;
+            /** Due Amount */
+            due_amount: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Frequency
+             * @default ANNUAL
+             * @enum {string}
+             */
+            frequency: "MONTHLY" | "QUARTERLY" | "SEMI_ANNUAL" | "ANNUAL" | "SINGLE";
+            /** Paid Amount */
+            paid_amount?: string | null;
+            /** Paid Date */
+            paid_date?: string | null;
+        };
+        /** PaymentUpdate */
+        PaymentUpdate: {
+            /**
+             * Currency
+             * @default CNY
+             */
+            currency: string;
+            /** Due Amount */
+            due_amount: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Frequency
+             * @default ANNUAL
+             * @enum {string}
+             */
+            frequency: "MONTHLY" | "QUARTERLY" | "SEMI_ANNUAL" | "ANNUAL" | "SINGLE";
+            /** Paid Amount */
+            paid_amount?: string | null;
+            /** Paid Date */
+            paid_date?: string | null;
+        };
+        /** PaymentView */
+        PaymentView: {
+            /**
+             * Currency
+             * @default CNY
+             */
+            currency: string;
+            /** Due Amount */
+            due_amount: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Frequency
+             * @default ANNUAL
+             * @enum {string}
+             */
+            frequency: "MONTHLY" | "QUARTERLY" | "SEMI_ANNUAL" | "ANNUAL" | "SINGLE";
+            /** Id */
+            id: string;
+            /** Paid Amount */
+            paid_amount?: string | null;
+            /** Paid Date */
+            paid_date?: string | null;
+            /** Revision */
+            revision: number;
+        };
         /** PolicyCreateRequest */
         PolicyCreateRequest: {
             /**
@@ -884,6 +1785,239 @@ export interface components {
              */
             status: "DRAFT" | "ACTIVE" | "EXPIRED" | "ARCHIVED";
         };
+        /** PolicyHistoryView */
+        PolicyHistoryView: {
+            /** Action */
+            action: string;
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+        };
+        /** PolicyInput */
+        PolicyInput: {
+            /**
+             * Category
+             * @default UNCONFIRMED
+             * @enum {string}
+             */
+            category: "CORE" | "GROUP" | "GIFT" | "UNCONFIRMED";
+            /**
+             * Coverage Summary
+             * @default
+             */
+            coverage_summary: string;
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Exclusions
+             * @default
+             */
+            exclusions: string;
+            /**
+             * Insurer
+             * @default
+             */
+            insurer: string;
+            /**
+             * Lifetime
+             * @default false
+             */
+            lifetime: boolean;
+            /**
+             * Line
+             * @default UNKNOWN
+             * @enum {string}
+             */
+            line: "MEDICAL" | "ACCIDENT" | "HUIMIN" | "CRITICAL_ILLNESS" | "ANNUITY" | "LIFE_SAVINGS" | "LIFE" | "PET" | "OTHER" | "UNKNOWN";
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Owner Id */
+            owner_id?: string | null;
+            /** Payer Id */
+            payer_id?: string | null;
+            /** Person Id */
+            person_id?: string | null;
+            /**
+             * Personal Terms
+             * @default
+             */
+            personal_terms: string;
+            /** Product Version Id */
+            product_version_id?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /**
+             * Status
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT" | "ACTIVE" | "EXPIRED" | "ARCHIVED";
+        };
+        /** PolicyUpdate */
+        PolicyUpdate: {
+            /**
+             * Category
+             * @default UNCONFIRMED
+             * @enum {string}
+             */
+            category: "CORE" | "GROUP" | "GIFT" | "UNCONFIRMED";
+            /**
+             * Coverage Summary
+             * @default
+             */
+            coverage_summary: string;
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Exclusions
+             * @default
+             */
+            exclusions: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Insurer
+             * @default
+             */
+            insurer: string;
+            /**
+             * Lifetime
+             * @default false
+             */
+            lifetime: boolean;
+            /**
+             * Line
+             * @default UNKNOWN
+             * @enum {string}
+             */
+            line: "MEDICAL" | "ACCIDENT" | "HUIMIN" | "CRITICAL_ILLNESS" | "ANNUITY" | "LIFE_SAVINGS" | "LIFE" | "PET" | "OTHER" | "UNKNOWN";
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Owner Id */
+            owner_id?: string | null;
+            /** Payer Id */
+            payer_id?: string | null;
+            /** Person Id */
+            person_id?: string | null;
+            /**
+             * Personal Terms
+             * @default
+             */
+            personal_terms: string;
+            /** Product Version Id */
+            product_version_id?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /**
+             * Status
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT" | "ACTIVE" | "EXPIRED" | "ARCHIVED";
+        };
+        /** PolicyView */
+        PolicyView: {
+            /**
+             * Category
+             * @default UNCONFIRMED
+             * @enum {string}
+             */
+            category: "CORE" | "GROUP" | "GIFT" | "UNCONFIRMED";
+            /**
+             * Coverage State
+             * @enum {string}
+             */
+            coverage_state: "UNKNOWN" | "SCHEDULED" | "IN_PERIOD" | "ENDED" | "ARCHIVED";
+            /**
+             * Coverage Summary
+             * @default
+             */
+            coverage_summary: string;
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Exclusions
+             * @default
+             */
+            exclusions: string;
+            /** Id */
+            id: string;
+            /**
+             * Insurer
+             * @default
+             */
+            insurer: string;
+            /**
+             * Lifetime
+             * @default false
+             */
+            lifetime: boolean;
+            /**
+             * Line
+             * @default UNKNOWN
+             * @enum {string}
+             */
+            line: "MEDICAL" | "ACCIDENT" | "HUIMIN" | "CRITICAL_ILLNESS" | "ANNUITY" | "LIFE_SAVINGS" | "LIFE" | "PET" | "OTHER" | "UNKNOWN";
+            /** Member Nickname */
+            member_nickname: string | null;
+            /** Missing Fields */
+            missing_fields: string[];
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Owner Id */
+            owner_id?: string | null;
+            /** Payer Id */
+            payer_id?: string | null;
+            /** Person Id */
+            person_id?: string | null;
+            /**
+             * Personal Terms
+             * @default
+             */
+            personal_terms: string;
+            /** Premium Records */
+            premium_records: components["schemas"]["PaymentView"][];
+            /** Product Version Id */
+            product_version_id?: string | null;
+            /** Revision */
+            revision: number;
+            /** Start Date */
+            start_date?: string | null;
+            /**
+             * Status
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT" | "ACTIVE" | "EXPIRED" | "ARCHIVED";
+            /**
+             * Value Origin
+             * @default MANUAL_ENTRY
+             * @constant
+             */
+            value_origin: "MANUAL_ENTRY";
+            /**
+             * Verification Status
+             * @default UNVERIFIED
+             * @constant
+             */
+            verification_status: "UNVERIFIED";
+        };
         /**
          * RateAdjustmentScope
          * @enum {string}
@@ -908,6 +2042,178 @@ export interface components {
         RestoreCommitRequest: {
             /** Restore Token */
             restore_token: string;
+        };
+        /** RetirementIncome */
+        RetirementIncome: {
+            /**
+             * Kind
+             * @default ESTIMATE
+             * @enum {string}
+             */
+            kind: "GUARANTEED" | "ESTIMATE" | "NON_GUARANTEED";
+            /** Label */
+            label: string;
+            /** Monthly Amount */
+            monthly_amount?: string | null;
+            /**
+             * Source Note
+             * @default
+             */
+            source_note: string;
+        };
+        /** RetirementInput */
+        RetirementInput: {
+            /**
+             * Currency
+             * @default CNY
+             */
+            currency: string;
+            /**
+             * Income Inventory Complete
+             * @default false
+             */
+            income_inventory_complete: boolean;
+            /** Incomes */
+            incomes?: components["schemas"]["RetirementIncome"][];
+            /** Monthly Expense */
+            monthly_expense?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Person Id */
+            person_id?: string | null;
+            /** Retirement Date */
+            retirement_date?: string | null;
+        };
+        /** RetirementResult */
+        RetirementResult: {
+            /**
+             * Algorithm Version
+             * @default retirement-monthly-gap-v1
+             */
+            algorithm_version: string;
+            /** Assumptions */
+            assumptions: string[];
+            /** Currency */
+            currency: string;
+            /** Input Hash */
+            input_hash: string;
+            /** Missing Inputs */
+            missing_inputs: string[];
+            /** Scenarios */
+            scenarios: components["schemas"]["RetirementScenario"][];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "INCOMPLETE" | "READY";
+            /** Valuation Date */
+            valuation_date: string | null;
+            /**
+             * Value Origin
+             * @default DETERMINISTIC_CALCULATION
+             * @constant
+             */
+            value_origin: "DETERMINISTIC_CALCULATION";
+            /**
+             * Verification Status
+             * @default UNVERIFIED
+             * @constant
+             */
+            verification_status: "UNVERIFIED";
+        };
+        /** RetirementScenario */
+        RetirementScenario: {
+            /** Monthly Expense */
+            monthly_expense: string;
+            /** Monthly Gap */
+            monthly_gap: string;
+            /** Monthly Income */
+            monthly_income: string;
+            /** Monthly Surplus */
+            monthly_surplus: string;
+            /** Name */
+            name: string;
+        };
+        /** RetirementSnapshot */
+        RetirementSnapshot: {
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            inputs: components["schemas"]["RetirementInput"];
+            /** Plan Id */
+            plan_id: string;
+            result: components["schemas"]["RetirementResult"];
+        };
+        /** RetirementUpdate */
+        RetirementUpdate: {
+            /**
+             * Currency
+             * @default CNY
+             */
+            currency: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Income Inventory Complete
+             * @default false
+             */
+            income_inventory_complete: boolean;
+            /** Incomes */
+            incomes?: components["schemas"]["RetirementIncome"][];
+            /** Monthly Expense */
+            monthly_expense?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Person Id */
+            person_id?: string | null;
+            /** Retirement Date */
+            retirement_date?: string | null;
+        };
+        /** RetirementView */
+        RetirementView: {
+            /**
+             * Currency
+             * @default CNY
+             */
+            currency: string;
+            /** Id */
+            id: string;
+            /**
+             * Income Inventory Complete
+             * @default false
+             */
+            income_inventory_complete: boolean;
+            /** Incomes */
+            incomes?: components["schemas"]["RetirementIncome"][];
+            /** Monthly Expense */
+            monthly_expense?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Person Id */
+            person_id?: string | null;
+            result: components["schemas"]["RetirementResult"];
+            /** Retirement Date */
+            retirement_date?: string | null;
+            /** Revision */
+            revision: number;
+            /** Updated At */
+            updated_at: string;
         };
         /** SaveAnalysisRequest */
         SaveAnalysisRequest: {
@@ -953,6 +2259,56 @@ export interface components {
          * @enum {string}
          */
         SourceAuthority: "CONTRACT_DOCUMENT" | "REGULATOR_PUBLICATION" | "INSURER_OFFICIAL_DISCLOSURE" | "INSURER_OFFICIAL_WEB" | "THIRD_PARTY_REFERENCE" | "UNATTRIBUTED";
+        /** TaskAction */
+        TaskAction: {
+            /** Expected Revision */
+            expected_revision: number;
+            /** Snoozed Until */
+            snoozed_until?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "OPEN" | "DONE" | "SNOOZED";
+        };
+        /** TaskInput */
+        TaskInput: {
+            /** Due Date */
+            due_date?: string | null;
+            /** Policy Id */
+            policy_id?: string | null;
+            /** Title */
+            title: string;
+        };
+        /** TaskView */
+        TaskView: {
+            /** Due Date */
+            due_date?: string | null;
+            /** Href */
+            href: string;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "PAYMENT" | "EXPIRY" | "INFORMATION" | "CUSTOM";
+            /** Policy Id */
+            policy_id?: string | null;
+            /** Reason */
+            reason: string;
+            /** Revision */
+            revision: number;
+            /** Snoozed Until */
+            snoozed_until?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "OPEN" | "DONE" | "SNOOZED";
+            /** Title */
+            title: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -985,6 +2341,28 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_analyses_api_v1_analyses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+        };
+    };
     save_analysis_api_v1_analyses_post: {
         parameters: {
             query?: never;
@@ -1323,6 +2701,1170 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    comparison_list_api_v1_household_comparisons_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyComparisonView"][];
+                };
+            };
+        };
+    };
+    create_comparison_api_v1_household_comparisons_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FamilyComparisonInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyComparisonView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    comparison_api_v1_household_comparisons__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyComparisonView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_list_api_v1_household_documents_get: {
+        parameters: {
+            query?: {
+                policy_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_document_api_v1_household_documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_document_api_v1_household_documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_api_v1_household_documents__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_document_api_v1_household_documents__identifier__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_content_api_v1_household_documents__identifier__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentContent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    original_api_v1_household_documents__identifier__original_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explanations_api_v1_household_explanations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationView"][];
+                };
+            };
+        };
+    };
+    explanation_preview_api_v1_household_explanations_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExplanationPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explanation_api_v1_household_explanations__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explanation_cancel_api_v1_household_explanations__identifier__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explanation_run_api_v1_household_explanations__identifier__run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExplanationRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explanation_status_api_v1_household_explanations__identifier__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalysisStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    members_api_v1_household_members_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberView"][];
+                };
+            };
+        };
+    };
+    create_member_api_v1_household_members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    member_api_v1_household_members__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_member_api_v1_household_members__identifier__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    policies_api_v1_household_policies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"][];
+                };
+            };
+        };
+    };
+    create_policy_api_v1_household_policies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    policy_api_v1_household_policies__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_policy_api_v1_household_policies__identifier__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    history_api_v1_household_policies__identifier__history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyHistoryView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_payment_api_v1_household_policies__identifier__payments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_payment_api_v1_household_policies__identifier__payments__payment_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    plans_api_v1_household_retirement_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementView"][];
+                };
+            };
+        };
+    };
+    create_plan_api_v1_household_retirement_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetirementInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    plan_api_v1_household_retirement__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_plan_api_v1_household_retirement__identifier__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetirementUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    snapshots_api_v1_household_retirement__identifier__snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementSnapshot"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reproduce_api_v1_household_retirement__identifier__snapshots__snapshot_id__reproduce_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                snapshot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetirementResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    source_content_api_v1_household_sources__identifier__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentContent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    source_original_api_v1_household_sources__identifier__original_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_api_v1_household_summary_get: {
+        parameters: {
+            query?: {
+                year?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HouseholdSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_list_api_v1_household_tasks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskView"][];
+                };
+            };
+        };
+    };
+    create_task_api_v1_household_tasks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_action_api_v1_household_tasks__identifier__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

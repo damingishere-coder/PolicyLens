@@ -8,6 +8,8 @@
 
 ## 阅读顺序
 
+当前家庭 V2 实现与边界见 [家庭工作区 V2](13-family-v2.md)；它更新早期文档中“研究优先、养老和提醒尚未实现”的状态描述，保留既有安全语义。[执行清单](V2_EXECUTION.md)记录交付范围。
+
 1. [项目边界](00-project-boundary.md)
 2. [产品需求](01-product-requirements.md)
 3. [信息架构与 UI](02-information-architecture-and-ui.md)

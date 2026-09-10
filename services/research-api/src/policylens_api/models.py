@@ -290,6 +290,8 @@ persons = Table(
     family_metadata,
     Column("id", String(40), primary_key=True),
     Column("nickname_encrypted", Text, nullable=False),
+    Column("profile_encrypted", Text),
+    Column("revision", Integer, nullable=False, server_default="1"),
     Column("created_at", String(40), nullable=False),
 )
 
@@ -297,10 +299,12 @@ policies = Table(
     "policies",
     family_metadata,
     Column("id", String(40), primary_key=True),
-    Column("person_id", ForeignKey("persons.id"), nullable=False),
-    Column("product_version_id", String(40), nullable=False),
+    Column("person_id", ForeignKey("persons.id")),
+    Column("product_version_id", String(40)),
     Column("category", String(30), nullable=False),
     Column("status", String(30), nullable=False),
+    Column("details_encrypted", Text),
+    Column("revision", Integer, nullable=False, server_default="1"),
     Column("created_at", String(40), nullable=False),
 )
 
@@ -316,6 +320,7 @@ policy_premium_records = Table(
     Column("due_date", String(20), nullable=False),
     Column("paid_date", String(20)),
     Column("premium_rate_id", String(40)),
+    Column("revision", Integer, nullable=False, server_default="1"),
 )
 
 comparison_cases = Table(
@@ -357,6 +362,55 @@ family_audit_events = Table(
     Column("created_at", String(40), nullable=False),
 )
 
-UniqueConstraint(
-    policies.c.person_id, policies.c.product_version_id, name="uq_person_product_version"
+family_documents = Table(
+    "family_documents", family_metadata,
+    Column("id", String(40), primary_key=True),
+    Column("policy_id", ForeignKey("policies.id")),
+    Column("metadata_encrypted", Text, nullable=False),
+    Column("sha256", String(64), nullable=False),
+    Column("vault_id", String(80), nullable=False),
+    Column("revision", Integer, nullable=False, server_default="1"),
+    Column("created_at", String(40), nullable=False),
+)
+
+household_tasks = Table(
+    "household_tasks", family_metadata,
+    Column("id", String(200), primary_key=True),
+    Column("payload_encrypted", Text, nullable=False),
+    Column("revision", Integer, nullable=False, server_default="1"),
+    Column("updated_at", String(40), nullable=False),
+)
+
+retirement_plans = Table(
+    "retirement_plans", family_metadata,
+    Column("id", String(40), primary_key=True),
+    Column("person_id", ForeignKey("persons.id")),
+    Column("payload_encrypted", Text, nullable=False),
+    Column("revision", Integer, nullable=False, server_default="1"),
+    Column("created_at", String(40), nullable=False),
+    Column("updated_at", String(40), nullable=False),
+)
+
+retirement_snapshots = Table(
+    "retirement_snapshots", family_metadata,
+    Column("id", String(40), primary_key=True),
+    Column("plan_id", ForeignKey("retirement_plans.id"), nullable=False),
+    Column("payload_encrypted", Text, nullable=False),
+    Column("input_hash", String(64), nullable=False),
+    Column("created_at", String(40), nullable=False),
+)
+
+comparison_records = Table(
+    "comparison_records", family_metadata,
+    Column("id", String(40), primary_key=True),
+    Column("payload_encrypted", Text, nullable=False),
+    Column("created_at", String(40), nullable=False),
+)
+
+context_analysis_runs = Table(
+    "context_analysis_runs", family_metadata,
+    Column("id", String(40), primary_key=True),
+    Column("payload_encrypted", Text, nullable=False),
+    Column("status", String(30), nullable=False),
+    Column("created_at", String(40), nullable=False),
 )

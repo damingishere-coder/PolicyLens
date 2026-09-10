@@ -11,8 +11,8 @@ from alembic.config import Config
 
 from alembic import command
 
-SCHEMA_VERSION = 2
-EXPECTED_REVISIONS = {"research": "research_0002", "family": "family_0001"}
+SCHEMA_VERSION = 3
+EXPECTED_REVISIONS = {"research": "research_0002", "family": "family_0002"}
 
 
 def _current_revision(path: Path) -> str | None:

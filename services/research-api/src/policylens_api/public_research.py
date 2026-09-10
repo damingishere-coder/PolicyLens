@@ -122,7 +122,7 @@ class PublicResearchService:
     def __init__(self, core: PolicyLensService) -> None:
         self.core = core
         self._ensure_catalog()
-        self._mark_interrupted_runs()
+        self.recover_interrupted_runs()
 
     def _ensure_catalog(self) -> None:
         now = _now()
@@ -166,7 +166,7 @@ class PublicResearchService:
                             )
                         )
 
-    def _mark_interrupted_runs(self) -> None:
+    def recover_interrupted_runs(self) -> None:
         active = {
             ResearchRunStatus.QUEUED.value,
             ResearchRunStatus.DISCOVERING.value,

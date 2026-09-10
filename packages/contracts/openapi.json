@@ -53,6 +53,31 @@
         "title": "Body_import_pdf_api_v1_imports_pdf_post",
         "type": "object"
       },
+      "Body_upload_document_api_v1_household_documents_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Id"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_api_v1_household_documents_post",
+        "type": "object"
+      },
       "Body_upload_restore_preview_api_v1_restores_upload_preview_post": {
         "properties": {
           "file": {
@@ -447,6 +472,232 @@
         "title": "CodexRunRequest",
         "type": "object"
       },
+      "ComparisonCell": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "guarantee_type": {
+            "title": "Guarantee Type",
+            "type": "string"
+          },
+          "product_version_id": {
+            "title": "Product Version Id",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_version_id",
+          "value",
+          "verification_status",
+          "guarantee_type",
+          "evidence_ids"
+        ],
+        "title": "ComparisonCell",
+        "type": "object"
+      },
+      "ComparisonDifference": {
+        "additionalProperties": false,
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonCell"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "label",
+          "cells"
+        ],
+        "title": "ComparisonDifference",
+        "type": "object"
+      },
+      "CurrencyTotal": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "outstanding_registered": {
+            "title": "Outstanding Registered",
+            "type": "string"
+          },
+          "paid_this_year": {
+            "title": "Paid This Year",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "paid_this_year",
+          "outstanding_registered"
+        ],
+        "title": "CurrencyTotal",
+        "type": "object"
+      },
+      "DocumentContent": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "PDF",
+              "TEXT"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "notice": {
+            "title": "Notice",
+            "type": "string"
+          },
+          "pages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pages",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "pages",
+          "kind",
+          "notice"
+        ],
+        "title": "DocumentContent",
+        "type": "object"
+      },
+      "DocumentUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Id"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "policy_id",
+          "title",
+          "expected_revision"
+        ],
+        "title": "DocumentUpdate",
+        "type": "object"
+      },
+      "DocumentView": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Id"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "text_available": {
+            "title": "Text Available",
+            "type": "boolean"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "policy_id",
+          "title",
+          "page_count",
+          "text_available",
+          "sha256",
+          "revision",
+          "created_at"
+        ],
+        "title": "DocumentView",
+        "type": "object"
+      },
       "EvidenceComparisonRequest": {
         "additionalProperties": false,
         "properties": {
@@ -464,6 +715,502 @@
           "product_version_ids"
         ],
         "title": "EvidenceComparisonRequest",
+        "type": "object"
+      },
+      "ExplanationPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "calculation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExternalCalculation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_excerpts": {
+            "items": {
+              "$ref": "#/components/schemas/CodexExternalEvidence"
+            },
+            "maxItems": 12,
+            "title": "Evidence Excerpts",
+            "type": "array"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CodexExternalProduct"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schema_version": {
+            "const": "context-v1",
+            "default": "context-v1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "task": {
+            "enum": [
+              "EXPLAIN_POLICY",
+              "EXPLAIN_RETIREMENT"
+            ],
+            "title": "Task",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task"
+        ],
+        "title": "ExplanationPayload",
+        "type": "object"
+      },
+      "ExplanationPreviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Ids"
+          },
+          "scope": {
+            "enum": [
+              "POLICY",
+              "RETIREMENT"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "snapshot_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Id"
+          },
+          "target_id": {
+            "maxLength": 40,
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "target_id"
+        ],
+        "title": "ExplanationPreviewRequest",
+        "type": "object"
+      },
+      "ExplanationRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          },
+          "preview_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Preview Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmed",
+          "preview_hash"
+        ],
+        "title": "ExplanationRunRequest",
+        "type": "object"
+      },
+      "ExplanationView": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ExplanationPayload"
+          },
+          "preview_hash": {
+            "title": "Preview Hash",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CodexAnalysisResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "enum": [
+              "POLICY",
+              "RETIREMENT"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Id"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "PREVIEW",
+              "RUNNING",
+              "DRAFT",
+              "ACCEPTED_AS_NOTE",
+              "REJECTED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "target_id": {
+            "title": "Target Id",
+            "type": "string"
+          },
+          "will_not_send": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Will Not Send",
+            "type": "array"
+          },
+          "will_send": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Will Send",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "target_id",
+          "snapshot_id",
+          "status",
+          "created_at",
+          "preview_hash",
+          "payload",
+          "stale",
+          "will_send",
+          "will_not_send"
+        ],
+        "title": "ExplanationView",
+        "type": "object"
+      },
+      "ExternalCalculation": {
+        "additionalProperties": false,
+        "properties": {
+          "algorithm": {
+            "const": "retirement-monthly-gap-v1",
+            "title": "Algorithm",
+            "type": "string"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "reference": {
+            "pattern": "^CALC-[A-F0-9]{16}$",
+            "title": "Reference",
+            "type": "string"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalScenario"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Scenarios",
+            "type": "array"
+          }
+        },
+        "required": [
+          "reference",
+          "algorithm",
+          "currency",
+          "scenarios",
+          "assumptions"
+        ],
+        "title": "ExternalCalculation",
+        "type": "object"
+      },
+      "ExternalScenario": {
+        "additionalProperties": false,
+        "properties": {
+          "monthly_expense": {
+            "pattern": "^\\d{1,16}\\.\\d{2}$",
+            "title": "Monthly Expense",
+            "type": "string"
+          },
+          "monthly_gap": {
+            "pattern": "^\\d{1,16}\\.\\d{2}$",
+            "title": "Monthly Gap",
+            "type": "string"
+          },
+          "monthly_income": {
+            "pattern": "^\\d{1,16}\\.\\d{2}$",
+            "title": "Monthly Income",
+            "type": "string"
+          },
+          "monthly_surplus": {
+            "pattern": "^\\d{1,16}\\.\\d{2}$",
+            "title": "Monthly Surplus",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "monthly_income",
+          "monthly_expense",
+          "monthly_gap",
+          "monthly_surplus"
+        ],
+        "title": "ExternalScenario",
+        "type": "object"
+      },
+      "FamilyComparisonInput": {
+        "additionalProperties": false,
+        "properties": {
+          "age": {
+            "anyOf": [
+              {
+                "maximum": 130.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "annual_budget": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Budget"
+          },
+          "benefit_term": {
+            "default": "",
+            "maxLength": 100,
+            "title": "Benefit Term",
+            "type": "string"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z]{3}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "jurisdiction": {
+            "anyOf": [
+              {
+                "enum": [
+                  "CN_MAINLAND",
+                  "HK"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiction"
+          },
+          "payment_term": {
+            "default": "",
+            "maxLength": 100,
+            "title": "Payment Term",
+            "type": "string"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "product_version_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4,
+            "minItems": 2,
+            "title": "Product Version Ids",
+            "type": "array"
+          },
+          "purpose": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "product_version_ids"
+        ],
+        "title": "FamilyComparisonInput",
+        "type": "object"
+      },
+      "FamilyComparisonView": {
+        "additionalProperties": false,
+        "properties": {
+          "algorithm_version": {
+            "const": "family-comparison-v1",
+            "default": "family-comparison-v1",
+            "title": "Algorithm Version",
+            "type": "string"
+          },
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blockers",
+            "type": "array"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "differences": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonDifference"
+            },
+            "title": "Differences",
+            "type": "array"
+          },
+          "evidence_complete": {
+            "title": "Evidence Complete",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "input_hash": {
+            "title": "Input Hash",
+            "type": "string"
+          },
+          "inputs": {
+            "$ref": "#/components/schemas/FamilyComparisonInput"
+          },
+          "product_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Product Names",
+            "type": "array"
+          },
+          "questions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Questions",
+            "type": "array"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "inputs",
+          "input_hash",
+          "product_names",
+          "blockers",
+          "questions",
+          "differences",
+          "evidence_complete",
+          "stale"
+        ],
+        "title": "FamilyComparisonView",
         "type": "object"
       },
       "GuaranteeType": {
@@ -486,6 +1233,68 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HouseholdSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/MemberView"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "policies": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyView"
+            },
+            "title": "Policies",
+            "type": "array"
+          },
+          "policies_without_payments": {
+            "title": "Policies Without Payments",
+            "type": "integer"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskView"
+            },
+            "title": "Tasks",
+            "type": "array"
+          },
+          "totals": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyTotal"
+            },
+            "title": "Totals",
+            "type": "array"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "as_of",
+          "year",
+          "members",
+          "policies",
+          "tasks",
+          "totals",
+          "policies_without_payments",
+          "disclaimer"
+        ],
+        "title": "HouseholdSummary",
         "type": "object"
       },
       "ImportReviewRequest": {
@@ -621,6 +1430,414 @@
         "title": "ManualMaterialRequest",
         "type": "object"
       },
+      "MemberInput": {
+        "additionalProperties": false,
+        "properties": {
+          "age": {
+            "anyOf": [
+              {
+                "maximum": 130.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "age_as_of": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age As Of"
+          },
+          "archived": {
+            "default": false,
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "nickname": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Nickname",
+            "type": "string"
+          },
+          "relationship": {
+            "default": "OTHER",
+            "enum": [
+              "SELF",
+              "PARENT",
+              "PARTNER",
+              "CHILD",
+              "OTHER"
+            ],
+            "title": "Relationship",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nickname"
+        ],
+        "title": "MemberInput",
+        "type": "object"
+      },
+      "MemberUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "age": {
+            "anyOf": [
+              {
+                "maximum": 130.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "age_as_of": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age As Of"
+          },
+          "archived": {
+            "default": false,
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "nickname": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Nickname",
+            "type": "string"
+          },
+          "relationship": {
+            "default": "OTHER",
+            "enum": [
+              "SELF",
+              "PARENT",
+              "PARTNER",
+              "CHILD",
+              "OTHER"
+            ],
+            "title": "Relationship",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nickname",
+          "expected_revision"
+        ],
+        "title": "MemberUpdate",
+        "type": "object"
+      },
+      "MemberView": {
+        "additionalProperties": false,
+        "properties": {
+          "age": {
+            "anyOf": [
+              {
+                "maximum": 130.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "age_as_of": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age As Of"
+          },
+          "archived": {
+            "default": false,
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nickname": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Nickname",
+            "type": "string"
+          },
+          "policy_count": {
+            "title": "Policy Count",
+            "type": "integer"
+          },
+          "possible_duplicate_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Possible Duplicate Ids",
+            "type": "array"
+          },
+          "relationship": {
+            "default": "OTHER",
+            "enum": [
+              "SELF",
+              "PARENT",
+              "PARTNER",
+              "CHILD",
+              "OTHER"
+            ],
+            "title": "Relationship",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nickname",
+          "id",
+          "revision",
+          "policy_count",
+          "possible_duplicate_ids"
+        ],
+        "title": "MemberView",
+        "type": "object"
+      },
+      "PaymentInput": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "CNY",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "due_amount": {
+            "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+            "title": "Due Amount",
+            "type": "string"
+          },
+          "due_date": {
+            "format": "date",
+            "title": "Due Date",
+            "type": "string"
+          },
+          "frequency": {
+            "default": "ANNUAL",
+            "enum": [
+              "MONTHLY",
+              "QUARTERLY",
+              "SEMI_ANNUAL",
+              "ANNUAL",
+              "SINGLE"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "paid_amount": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Amount"
+          },
+          "paid_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Date"
+          }
+        },
+        "required": [
+          "due_amount",
+          "due_date"
+        ],
+        "title": "PaymentInput",
+        "type": "object"
+      },
+      "PaymentUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "CNY",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "due_amount": {
+            "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+            "title": "Due Amount",
+            "type": "string"
+          },
+          "due_date": {
+            "format": "date",
+            "title": "Due Date",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "frequency": {
+            "default": "ANNUAL",
+            "enum": [
+              "MONTHLY",
+              "QUARTERLY",
+              "SEMI_ANNUAL",
+              "ANNUAL",
+              "SINGLE"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "paid_amount": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Amount"
+          },
+          "paid_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Date"
+          }
+        },
+        "required": [
+          "due_amount",
+          "due_date",
+          "expected_revision"
+        ],
+        "title": "PaymentUpdate",
+        "type": "object"
+      },
+      "PaymentView": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "CNY",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "due_amount": {
+            "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+            "title": "Due Amount",
+            "type": "string"
+          },
+          "due_date": {
+            "format": "date",
+            "title": "Due Date",
+            "type": "string"
+          },
+          "frequency": {
+            "default": "ANNUAL",
+            "enum": [
+              "MONTHLY",
+              "QUARTERLY",
+              "SEMI_ANNUAL",
+              "ANNUAL",
+              "SINGLE"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "paid_amount": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Amount"
+          },
+          "paid_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Date"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "due_amount",
+          "due_date",
+          "id",
+          "revision"
+        ],
+        "title": "PaymentView",
+        "type": "object"
+      },
       "PolicyCreateRequest": {
         "additionalProperties": false,
         "properties": {
@@ -718,6 +1935,572 @@
         "title": "PolicyCreateRequest",
         "type": "object"
       },
+      "PolicyHistoryView": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "created_at"
+        ],
+        "title": "PolicyHistoryView",
+        "type": "object"
+      },
+      "PolicyInput": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "default": "UNCONFIRMED",
+            "enum": [
+              "CORE",
+              "GROUP",
+              "GIFT",
+              "UNCONFIRMED"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "coverage_summary": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Coverage Summary",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "exclusions": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Exclusions",
+            "type": "string"
+          },
+          "insurer": {
+            "default": "",
+            "maxLength": 160,
+            "title": "Insurer",
+            "type": "string"
+          },
+          "lifetime": {
+            "default": false,
+            "title": "Lifetime",
+            "type": "boolean"
+          },
+          "line": {
+            "default": "UNKNOWN",
+            "enum": [
+              "MEDICAL",
+              "ACCIDENT",
+              "HUIMIN",
+              "CRITICAL_ILLNESS",
+              "ANNUITY",
+              "LIFE_SAVINGS",
+              "LIFE",
+              "PET",
+              "OTHER",
+              "UNKNOWN"
+            ],
+            "title": "Line",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "payer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payer Id"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "personal_terms": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Personal Terms",
+            "type": "string"
+          },
+          "product_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Version Id"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "default": "DRAFT",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "EXPIRED",
+              "ARCHIVED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PolicyInput",
+        "type": "object"
+      },
+      "PolicyUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "default": "UNCONFIRMED",
+            "enum": [
+              "CORE",
+              "GROUP",
+              "GIFT",
+              "UNCONFIRMED"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "coverage_summary": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Coverage Summary",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "exclusions": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Exclusions",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "insurer": {
+            "default": "",
+            "maxLength": 160,
+            "title": "Insurer",
+            "type": "string"
+          },
+          "lifetime": {
+            "default": false,
+            "title": "Lifetime",
+            "type": "boolean"
+          },
+          "line": {
+            "default": "UNKNOWN",
+            "enum": [
+              "MEDICAL",
+              "ACCIDENT",
+              "HUIMIN",
+              "CRITICAL_ILLNESS",
+              "ANNUITY",
+              "LIFE_SAVINGS",
+              "LIFE",
+              "PET",
+              "OTHER",
+              "UNKNOWN"
+            ],
+            "title": "Line",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "payer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payer Id"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "personal_terms": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Personal Terms",
+            "type": "string"
+          },
+          "product_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Version Id"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "default": "DRAFT",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "EXPIRED",
+              "ARCHIVED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "expected_revision"
+        ],
+        "title": "PolicyUpdate",
+        "type": "object"
+      },
+      "PolicyView": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "default": "UNCONFIRMED",
+            "enum": [
+              "CORE",
+              "GROUP",
+              "GIFT",
+              "UNCONFIRMED"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "coverage_state": {
+            "enum": [
+              "UNKNOWN",
+              "SCHEDULED",
+              "IN_PERIOD",
+              "ENDED",
+              "ARCHIVED"
+            ],
+            "title": "Coverage State",
+            "type": "string"
+          },
+          "coverage_summary": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Coverage Summary",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "exclusions": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Exclusions",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "insurer": {
+            "default": "",
+            "maxLength": 160,
+            "title": "Insurer",
+            "type": "string"
+          },
+          "lifetime": {
+            "default": false,
+            "title": "Lifetime",
+            "type": "boolean"
+          },
+          "line": {
+            "default": "UNKNOWN",
+            "enum": [
+              "MEDICAL",
+              "ACCIDENT",
+              "HUIMIN",
+              "CRITICAL_ILLNESS",
+              "ANNUITY",
+              "LIFE_SAVINGS",
+              "LIFE",
+              "PET",
+              "OTHER",
+              "UNKNOWN"
+            ],
+            "title": "Line",
+            "type": "string"
+          },
+          "member_nickname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Member Nickname"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Fields",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "payer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payer Id"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "personal_terms": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Personal Terms",
+            "type": "string"
+          },
+          "premium_records": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentView"
+            },
+            "title": "Premium Records",
+            "type": "array"
+          },
+          "product_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Version Id"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "default": "DRAFT",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "EXPIRED",
+              "ARCHIVED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "value_origin": {
+            "const": "MANUAL_ENTRY",
+            "default": "MANUAL_ENTRY",
+            "title": "Value Origin",
+            "type": "string"
+          },
+          "verification_status": {
+            "const": "UNVERIFIED",
+            "default": "UNVERIFIED",
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "id",
+          "revision",
+          "member_nickname",
+          "coverage_state",
+          "missing_fields",
+          "premium_records"
+        ],
+        "title": "PolicyView",
+        "type": "object"
+      },
       "RateAdjustmentScope": {
         "enum": [
           "INDIVIDUAL",
@@ -775,6 +2558,451 @@
           "restore_token"
         ],
         "title": "RestoreCommitRequest",
+        "type": "object"
+      },
+      "RetirementIncome": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "default": "ESTIMATE",
+            "enum": [
+              "GUARANTEED",
+              "ESTIMATE",
+              "NON_GUARANTEED"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "monthly_amount": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Amount"
+          },
+          "source_note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Source Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "title": "RetirementIncome",
+        "type": "object"
+      },
+      "RetirementInput": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "CNY",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "income_inventory_complete": {
+            "default": false,
+            "title": "Income Inventory Complete",
+            "type": "boolean"
+          },
+          "incomes": {
+            "items": {
+              "$ref": "#/components/schemas/RetirementIncome"
+            },
+            "maxItems": 30,
+            "title": "Incomes",
+            "type": "array"
+          },
+          "monthly_expense": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Expense"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "retirement_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retirement Date"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "RetirementInput",
+        "type": "object"
+      },
+      "RetirementResult": {
+        "additionalProperties": false,
+        "properties": {
+          "algorithm_version": {
+            "default": "retirement-monthly-gap-v1",
+            "title": "Algorithm Version",
+            "type": "string"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "input_hash": {
+            "title": "Input Hash",
+            "type": "string"
+          },
+          "missing_inputs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Inputs",
+            "type": "array"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/RetirementScenario"
+            },
+            "title": "Scenarios",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "INCOMPLETE",
+              "READY"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "valuation_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valuation Date"
+          },
+          "value_origin": {
+            "const": "DETERMINISTIC_CALCULATION",
+            "default": "DETERMINISTIC_CALCULATION",
+            "title": "Value Origin",
+            "type": "string"
+          },
+          "verification_status": {
+            "const": "UNVERIFIED",
+            "default": "UNVERIFIED",
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "missing_inputs",
+          "input_hash",
+          "currency",
+          "valuation_date",
+          "scenarios",
+          "assumptions"
+        ],
+        "title": "RetirementResult",
+        "type": "object"
+      },
+      "RetirementScenario": {
+        "additionalProperties": false,
+        "properties": {
+          "monthly_expense": {
+            "title": "Monthly Expense",
+            "type": "string"
+          },
+          "monthly_gap": {
+            "title": "Monthly Gap",
+            "type": "string"
+          },
+          "monthly_income": {
+            "title": "Monthly Income",
+            "type": "string"
+          },
+          "monthly_surplus": {
+            "title": "Monthly Surplus",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "monthly_income",
+          "monthly_expense",
+          "monthly_gap",
+          "monthly_surplus"
+        ],
+        "title": "RetirementScenario",
+        "type": "object"
+      },
+      "RetirementSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "inputs": {
+            "$ref": "#/components/schemas/RetirementInput"
+          },
+          "plan_id": {
+            "title": "Plan Id",
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/RetirementResult"
+          }
+        },
+        "required": [
+          "id",
+          "plan_id",
+          "created_at",
+          "inputs",
+          "result"
+        ],
+        "title": "RetirementSnapshot",
+        "type": "object"
+      },
+      "RetirementUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "CNY",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "income_inventory_complete": {
+            "default": false,
+            "title": "Income Inventory Complete",
+            "type": "boolean"
+          },
+          "incomes": {
+            "items": {
+              "$ref": "#/components/schemas/RetirementIncome"
+            },
+            "maxItems": 30,
+            "title": "Incomes",
+            "type": "array"
+          },
+          "monthly_expense": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Expense"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "retirement_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retirement Date"
+          }
+        },
+        "required": [
+          "name",
+          "expected_revision"
+        ],
+        "title": "RetirementUpdate",
+        "type": "object"
+      },
+      "RetirementView": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "CNY",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "income_inventory_complete": {
+            "default": false,
+            "title": "Income Inventory Complete",
+            "type": "boolean"
+          },
+          "incomes": {
+            "items": {
+              "$ref": "#/components/schemas/RetirementIncome"
+            },
+            "maxItems": 30,
+            "title": "Incomes",
+            "type": "array"
+          },
+          "monthly_expense": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{1,12}(?:\\.\\d{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Expense"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "result": {
+            "$ref": "#/components/schemas/RetirementResult"
+          },
+          "retirement_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retirement Date"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "id",
+          "revision",
+          "updated_at",
+          "result"
+        ],
+        "title": "RetirementView",
         "type": "object"
       },
       "SaveAnalysisRequest": {
@@ -879,6 +3107,174 @@
         "title": "SourceAuthority",
         "type": "string"
       },
+      "TaskAction": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "snoozed_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snoozed Until"
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "DONE",
+              "SNOOZED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "expected_revision"
+        ],
+        "title": "TaskAction",
+        "type": "object"
+      },
+      "TaskInput": {
+        "additionalProperties": false,
+        "properties": {
+          "due_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Id"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "TaskInput",
+        "type": "object"
+      },
+      "TaskView": {
+        "additionalProperties": false,
+        "properties": {
+          "due_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "href": {
+            "title": "Href",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "PAYMENT",
+              "EXPIRY",
+              "INFORMATION",
+              "CUSTOM"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Id"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "snoozed_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snoozed Until"
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "DONE",
+              "SNOOZED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "kind",
+          "status",
+          "revision",
+          "reason",
+          "href"
+        ],
+        "title": "TaskView",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -951,6 +3347,30 @@
   "openapi": "3.1.0",
   "paths": {
     "/api/v1/analyses": {
+      "get": {
+        "operationId": "list_analyses_api_v1_analyses_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Analyses Api V1 Analyses Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Analyses",
+        "tags": [
+          "codex"
+        ]
+      },
       "post": {
         "operationId": "save_analysis_api_v1_analyses_post",
         "requestBody": {
@@ -1368,6 +3788,1605 @@
         "summary": "Dashboard",
         "tags": [
           "workspace"
+        ]
+      }
+    },
+    "/api/v1/household/comparisons": {
+      "get": {
+        "operationId": "comparison_list_api_v1_household_comparisons_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FamilyComparisonView"
+                  },
+                  "title": "Response Comparison List Api V1 Household Comparisons Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Comparison List",
+        "tags": [
+          "household"
+        ]
+      },
+      "post": {
+        "operationId": "create_comparison_api_v1_household_comparisons_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FamilyComparisonInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyComparisonView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Comparison",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/comparisons/{identifier}": {
+      "get": {
+        "operationId": "comparison_api_v1_household_comparisons__identifier__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyComparisonView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Comparison",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/documents": {
+      "get": {
+        "operationId": "document_list_api_v1_household_documents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "policy_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentView"
+                  },
+                  "title": "Response Document List Api V1 Household Documents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document List",
+        "tags": [
+          "household"
+        ]
+      },
+      "post": {
+        "operationId": "upload_document_api_v1_household_documents_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_api_v1_household_documents_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Document",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/documents/{identifier}": {
+      "get": {
+        "operationId": "document_api_v1_household_documents__identifier__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document",
+        "tags": [
+          "household"
+        ]
+      },
+      "put": {
+        "operationId": "update_document_api_v1_household_documents__identifier__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Document",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/documents/{identifier}/content": {
+      "get": {
+        "operationId": "document_content_api_v1_household_documents__identifier__content_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentContent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Content",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/documents/{identifier}/original": {
+      "get": {
+        "operationId": "original_api_v1_household_documents__identifier__original_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Original",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/explanations": {
+      "get": {
+        "operationId": "explanations_api_v1_household_explanations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExplanationView"
+                  },
+                  "title": "Response Explanations Api V1 Household Explanations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Explanations",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/explanations/preview": {
+      "post": {
+        "operationId": "explanation_preview_api_v1_household_explanations_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplanationPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explanation Preview",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/explanations/{identifier}": {
+      "get": {
+        "operationId": "explanation_api_v1_household_explanations__identifier__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explanation",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/explanations/{identifier}/cancel": {
+      "post": {
+        "operationId": "explanation_cancel_api_v1_household_explanations__identifier__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explanation Cancel",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/explanations/{identifier}/run": {
+      "post": {
+        "operationId": "explanation_run_api_v1_household_explanations__identifier__run_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplanationRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explanation Run",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/explanations/{identifier}/status": {
+      "patch": {
+        "operationId": "explanation_status_api_v1_household_explanations__identifier__status_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explanation Status",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/members": {
+      "get": {
+        "operationId": "members_api_v1_household_members_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MemberView"
+                  },
+                  "title": "Response Members Api V1 Household Members Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Members",
+        "tags": [
+          "household"
+        ]
+      },
+      "post": {
+        "operationId": "create_member_api_v1_household_members_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Member",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/members/{identifier}": {
+      "get": {
+        "operationId": "member_api_v1_household_members__identifier__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Member",
+        "tags": [
+          "household"
+        ]
+      },
+      "put": {
+        "operationId": "update_member_api_v1_household_members__identifier__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Member",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/policies": {
+      "get": {
+        "operationId": "policies_api_v1_household_policies_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PolicyView"
+                  },
+                  "title": "Response Policies Api V1 Household Policies Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Policies",
+        "tags": [
+          "household"
+        ]
+      },
+      "post": {
+        "operationId": "create_policy_api_v1_household_policies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Policy",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/policies/{identifier}": {
+      "get": {
+        "operationId": "policy_api_v1_household_policies__identifier__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Policy",
+        "tags": [
+          "household"
+        ]
+      },
+      "put": {
+        "operationId": "update_policy_api_v1_household_policies__identifier__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Policy",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/policies/{identifier}/history": {
+      "get": {
+        "operationId": "history_api_v1_household_policies__identifier__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PolicyHistoryView"
+                  },
+                  "title": "Response History Api V1 Household Policies  Identifier  History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "History",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/policies/{identifier}/payments": {
+      "post": {
+        "operationId": "create_payment_api_v1_household_policies__identifier__payments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Payment",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/policies/{identifier}/payments/{payment_id}": {
+      "put": {
+        "operationId": "update_payment_api_v1_household_policies__identifier__payments__payment_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "payment_id",
+            "required": true,
+            "schema": {
+              "title": "Payment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Payment",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/retirement": {
+      "get": {
+        "operationId": "plans_api_v1_household_retirement_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RetirementView"
+                  },
+                  "title": "Response Plans Api V1 Household Retirement Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Plans",
+        "tags": [
+          "household"
+        ]
+      },
+      "post": {
+        "operationId": "create_plan_api_v1_household_retirement_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetirementInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetirementView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Plan",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/retirement/{identifier}": {
+      "get": {
+        "operationId": "plan_api_v1_household_retirement__identifier__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetirementView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Plan",
+        "tags": [
+          "household"
+        ]
+      },
+      "put": {
+        "operationId": "update_plan_api_v1_household_retirement__identifier__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetirementUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetirementView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Plan",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/retirement/{identifier}/snapshots": {
+      "get": {
+        "operationId": "snapshots_api_v1_household_retirement__identifier__snapshots_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RetirementSnapshot"
+                  },
+                  "title": "Response Snapshots Api V1 Household Retirement  Identifier  Snapshots Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Snapshots",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/retirement/{identifier}/snapshots/{snapshot_id}/reproduce": {
+      "post": {
+        "operationId": "reproduce_api_v1_household_retirement__identifier__snapshots__snapshot_id__reproduce_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "snapshot_id",
+            "required": true,
+            "schema": {
+              "title": "Snapshot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetirementResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reproduce",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/sources/{identifier}/content": {
+      "get": {
+        "operationId": "source_content_api_v1_household_sources__identifier__content_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentContent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Source Content",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/sources/{identifier}/original": {
+      "get": {
+        "operationId": "source_original_api_v1_household_sources__identifier__original_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Source Original",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/summary": {
+      "get": {
+        "operationId": "summary_api_v1_household_summary_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 2200,
+                  "minimum": 1900,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseholdSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Summary",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/tasks": {
+      "get": {
+        "operationId": "task_list_api_v1_household_tasks_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TaskView"
+                  },
+                  "title": "Response Task List Api V1 Household Tasks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Task List",
+        "tags": [
+          "household"
+        ]
+      },
+      "post": {
+        "operationId": "create_task_api_v1_household_tasks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Task",
+        "tags": [
+          "household"
+        ]
+      }
+    },
+    "/api/v1/household/tasks/{identifier}": {
+      "put": {
+        "operationId": "task_action_api_v1_household_tasks__identifier__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "title": "Identifier",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskAction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Action",
+        "tags": [
+          "household"
         ]
       }
     },
